@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using OnyraProjet.Components;
 using OnyraProjet.Data;
+using OnyraProjet.Services;
 
 namespace OnyraProjet
 {
@@ -12,7 +13,7 @@ namespace OnyraProjet
         {
             var builder = WebApplication.CreateBuilder(args);
             var conStrBuilder = new SqlConnectionStringBuilder(
-                builder.Configuration.GetConnectionString("ConnexionDB"));
+                builder.Configuration.GetConnectionString("ConnexionDBDev"));
             conStrBuilder.Password = builder.Configuration["Password"];
 
             builder.Services.AddPooledDbContextFactory<Prog3a25ProductionAllysonJadContext>(
@@ -21,6 +22,7 @@ namespace OnyraProjet
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+            builder.Services.AddScoped<WeatherService>();
 
             var app = builder.Build();
 
