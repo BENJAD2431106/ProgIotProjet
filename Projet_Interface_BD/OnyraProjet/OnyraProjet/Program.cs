@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using OnyraProjet.Components;
 using OnyraProjet.Data;
+using OnyraProjet.Services;
 
 namespace OnyraProjet
 {
@@ -21,6 +22,7 @@ namespace OnyraProjet
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+            builder.Services.AddScoped<ConnexionService>();
 
             var app = builder.Build();
 
