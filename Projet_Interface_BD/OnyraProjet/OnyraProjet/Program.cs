@@ -13,7 +13,7 @@ namespace OnyraProjet
         {
             var builder = WebApplication.CreateBuilder(args);
             var conStrBuilder = new SqlConnectionStringBuilder(
-                builder.Configuration.GetConnectionString("ConnexionDB"));
+                builder.Configuration.GetConnectionString("ConnexionDBDev"));
             conStrBuilder.Password = builder.Configuration["Password"];
 
             builder.Services.AddPooledDbContextFactory<Prog3a25ProductionAllysonJadContext>(
@@ -23,7 +23,7 @@ namespace OnyraProjet
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
             builder.Services.AddScoped<ConnexionService>();
-
+            builder.Services.AddScoped<WeatherService>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

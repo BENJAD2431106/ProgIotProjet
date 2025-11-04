@@ -18,9 +18,9 @@
   <ItemGroup>
     <Folder Include="Authentication\" />
     <Folder Include="Data\" />
+    <Folder Include="Models\" />
     <Folder Include="Shared\" />
     <Folder Include="Pages\" />
-    <Folder Include="Partials\" />
   </ItemGroup>
 
 </Project>
