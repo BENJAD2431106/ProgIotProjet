@@ -1,23 +1,51 @@
 ﻿@page "/inscription"
 
+@inject OnyraProjet.Services.InscriptionService inscriptionService
+
+@using OnyraProjet.Models
+
 @attribute [StreamRendering]
 
 <PageTitle>Inscription</PageTitle>
 
 <form>
     <div class="form-group">
-        <label for="exampleInputEmail1">Email address</label>
-        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+        <label for="email">Email address</label>
+        <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email">
         <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
     </div>
     <div class="form-group">
-        <label for="exampleInputPassword1">Password</label>
-        <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+        <label for="nom">First Name</label>
+        <input type="text" class="form-control" id="InputNom" aria-describedby="nomHelp" placeholder="Your First Name">
+    </div>
+    <div class="form-group">
+        <label for="prenom">Last Name</label>
+        <input type="text" class="form-control" id="InputPrenom" aria-describedby="prenomHelp" placeholder="Your Last Name">
+    </div>
+    <div class="row g-3 align-items-center">
+        <div class="col-auto">
+            <label for="inputPassword6" class="col-form-label">Password</label>
+        </div>
+        <div class="col-auto">
+            <input type="password" id="inputPassword6" class="form-control" aria-describedby="passwordHelpInline" placeholder="Enter Password">
+        </div>
+        <div class="col-auto">
+            <span id="passwordHelpInline" class="form-text">
+                Must be 8-20 characters long.
+            </span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="exampleFormControlFile1">Load Your Photo</label>
+        <input type="file" class="form-control-file" id="photo">
+    </div>
+    <div class="form-group">
+        <label for="ramq">RamQ</label>
+        <input type="text" class="form-control" id="InputRamq" aria-describedby="ramqHelp" placeholder="Enter your 'RamQ'">
+    </div>
+    <div class="form-group">
+        <label for="age">Age </label>
+        <input type="text" class="form-control" id="InputAge" aria-describedby="ageHelp" placeholder="Enter your Age">
     </div>
     <button type="submit" class="btn btn-primary">Submit</button>
-    <div class="form-group">
-        <label for="exampleFormControlFile1">Example file input</label>
-        <input type="file" class="form-control-file" id="exampleFormControlFile1">
-    </div>
 </form>
-

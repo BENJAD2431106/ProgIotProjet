@@ -24,6 +24,9 @@ namespace OnyraProjet
                 .AddInteractiveServerComponents();
             builder.Services.AddScoped<ConnexionService>();
             builder.Services.AddScoped<WeatherService>();
+            //mine
+            builder.Services.AddScoped<InscriptionService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

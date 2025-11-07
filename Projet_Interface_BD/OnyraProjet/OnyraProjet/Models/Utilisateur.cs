@@ -43,10 +43,9 @@ public partial class Utilisateur
     [Column("dateRdv")]
     public DateOnly? DateRdv { get; set; }
 
-    [Column("assuranceSociale")]
-    [StringLength(9)]
-    [Unicode(false)]
-    public string AssuranceSociale { get; set; } = null!;
+    [Column("ramQ")]
+    [StringLength(12)]
+    public string RamQ { get; set; } = null!;
 
     [Column("config")]
     public bool? Config { get; set; }
