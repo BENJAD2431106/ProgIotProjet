@@ -23,6 +23,8 @@ namespace OnyraProjet
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
             builder.Services.AddScoped<WeatherService>();
+            //mine
+            builder.Services.AddScoped<InscriptionService>();
 
             var app = builder.Build();
 
