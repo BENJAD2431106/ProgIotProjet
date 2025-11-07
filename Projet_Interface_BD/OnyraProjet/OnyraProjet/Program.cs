@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
+using OnyraProjet.Authentication;
 using OnyraProjet.Components;
 using OnyraProjet.Data;
 using OnyraProjet.Services;
@@ -24,6 +27,10 @@ namespace OnyraProjet
                 .AddInteractiveServerComponents();
             builder.Services.AddScoped<ConnexionService>();
             builder.Services.AddScoped<WeatherService>();
+            builder.Services.AddScoped<ProtectedSessionStorage>();
+            builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthentificationStateProvider>();
+            builder.Services.AddScoped<AddAuthenticationCore>();
+
             //mine
             builder.Services.AddScoped<InscriptionService>();
 
