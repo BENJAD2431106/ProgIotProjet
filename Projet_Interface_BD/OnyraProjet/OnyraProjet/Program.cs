@@ -22,6 +22,7 @@ namespace OnyraProjet
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+            builder.Services.AddScoped<ConnexionService>();
             builder.Services.AddScoped<WeatherService>();
             //mine
             builder.Services.AddScoped<InscriptionService>();
