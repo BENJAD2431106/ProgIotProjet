@@ -1,6 +1,6 @@
 CREATE VIEW DonneesUtilisateur AS
-	SELECT valTemperature, valSon, dateHeure, nomUtilisateur, prenomUtilisateur, age 
+	SELECT d.valLumiere, d.valSon, d.dateHeure, u.nomUtilisateur, u.prenomUtilisateur, u.age 
 	FROM Donnees d 
 	JOIN Utilisateurs u 
-	ON d.noUtilisateur=u.noUtilisateur;
+	ON d.noUtilisateur = u.noUtilisateur;
 GO

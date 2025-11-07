@@ -12,7 +12,8 @@ public partial class DonneesCalendrier
     [Column("noUtilisateur")]
     public int NoUtilisateur { get; set; }
 
-    public double ValTemperature { get; set; }
+    [Column("valLumiere")]
+    public double ValLumiere { get; set; }
 
     [Column("valSon")]
     public double ValSon { get; set; }
