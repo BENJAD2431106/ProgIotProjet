@@ -1,9 +1,132 @@
 ﻿@page "/Calendrier"
 
-<h3>Component</h3>
+@using System.Globalization
 
-<PageTitle>Calendrier</PageTitle>
+@using OnyraProjet.Models
 
-<h1>Hello, world!</h1>
+@rendermode InteractiveServer
 
-Welcome to your new app.
+
+<h3>Calendrier</h3>
+<div>
+    <button @onclick="() => PrevMonth()">◀️</button>
+    <strong>@currentMonth.ToString("MMMM yyyy", CultureInfo.GetCultureInfo("fr-FR"))</strong>
+    <button @onclick="NextMonth">▶️</button>
+</div>
+
+<table style="margin-top:10px; border-collapse: collapse;">
+    <thead>
+        <tr>
+            @foreach (var dayName in dayNames)
+            {
+                <th style="padding:15px; border:1px solid #ccc;">@dayName</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @for (int week = 0; week < 6; week++)
+        {
+            <tr>
+                @for (int day = 0; day < 7; day++)
+                {
+                    var index = week * 7 + day;
+                    var date = days[index];
+                    var isCurrentMonth = date.Month == currentMonth.Month;
+                    var isSelected = date == selectedDate;
+
+                    <td style="@GetCellStyle(isCurrentMonth, isSelected)" @onclick="() => SelectDay(date)">
+                        @date.Day
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (selectedDate != DateTime.MinValue)
+{
+    <div style="margin-top:15px;">
+        <h4>Ajouter des données pour le @selectedDate.ToString("dd MMMM yyyy", CultureInfo.GetCultureInfo("fr-FR"))</h4>
+        <form>
+            <div class="form-group">
+                <label for="ressenti">Votre Ressenti :</label>
+                <input type="text" class="form-control" id="ressenti"  placeholder="1 à 10" />                
+            </div>
+            <div class="form-group">
+                <label for="hCoucher">Heure Du Coucher</label>
+                <input type="text" class="form-control" id="hCoucher" placeholder="Format YYYY-MM-DD hh:mm:ss" />
+            </div>
+            <div class="form-group">
+                <label for="hLever">Heure Du Réveil</label>
+                <input type="text" class="form-control" id="hReveil" placeholder="YYYY-MM-DD hh:mm:ss" />
+            </div>
+            <div class="form-group">
+                <label for="nbReveil">Le nombre de réveil</label>
+                <input type="text" class="form-control" id="nbReveil" placeholder="Plus il est élevé, moins votre sommeil est efficace!" />
+            </div>
+            <button @onclick="SaveNote">Enregistrer</button>
+            <button @onclick="GenerateCalendar">Annuler</button>
+        </form>
+    </div>
+}
+
+@code {
+    private DateTime currentMonth = DateTime.Today;
+    private DateTime selectedDate = DateTime.MinValue;
+    private string note = "";
+
+    private string[] dayNames = new[] { "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim" };
+    private List<DateTime> days = new();
+
+    protected override void OnInitialized()
+    {
+        GenerateCalendar();
+    }
+
+    private void GenerateCalendar()
+    {
+        days.Clear();
+        var firstDay = new DateTime(currentMonth.Year, currentMonth.Month, 1);
+        int offset = ((int)firstDay.DayOfWeek + 6) % 7; // Commence lundi
+        var startDate = firstDay.AddDays(-offset);
+
+        for (int i = 0; i < 42; i++)
+        {
+            days.Add(startDate.AddDays(i));
+        }
+    }
+
+    private void PrevMonth()
+    {
+        currentMonth = currentMonth.AddMonths(-1);
+        GenerateCalendar();
+    }
+
+    private void NextMonth()
+    {
+        currentMonth = currentMonth.AddMonths(1);
+        GenerateCalendar();
+    }
+
+    private void SelectDay(DateTime date)
+    {
+        selectedDate = date;
+    }
+
+    private void SaveNote()
+    {
+        Console.WriteLine($"Note pour {selectedDate.ToShortDateString()} : {note}");
+        note = "";
+        selectedDate = DateTime.MinValue;
+    }
+
+    private string GetCellStyle(bool isCurrentMonth, bool isSelected)
+    {
+        string baseStyle = "padding:6px; text-align:center; border:1px solid #ccc; cursor:pointer;";
+        if (!isCurrentMonth)
+            baseStyle += "color:gray;";
+        if (isSelected)
+            baseStyle += "background-color:lightblue; font-weight:bold;";
+        return baseStyle;
+    }
+}

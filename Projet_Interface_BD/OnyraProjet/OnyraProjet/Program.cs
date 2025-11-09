@@ -20,9 +20,10 @@ namespace OnyraProjet
             conStrBuilder.Password = builder.Configuration["Password"];
 
             builder.Services.AddPooledDbContextFactory<Prog3a25ProductionAllysonJadContext>(
-                x=>x.UseSqlServer(conStrBuilder.ConnectionString));
+                x => x.UseSqlServer(conStrBuilder.ConnectionString));
 
             // Add services to the container.
+            builder.Services.AddRazorComponents();
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
             builder.Services.AddScoped<ConnexionService>();

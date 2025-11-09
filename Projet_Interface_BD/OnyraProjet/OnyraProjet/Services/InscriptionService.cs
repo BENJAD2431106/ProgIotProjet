@@ -17,15 +17,19 @@ namespace OnyraProjet.Services
         public async Task AjouterUtilisateur_UP(Utilisateur nouvelUtilisateur)
         {
             var dbContext = myFactory.CreateDbContextAsync().Result;
-            var param1 = new SqlParameter("courrielParam", nouvelUtilisateur.Courriel);
-            var param2 = new SqlParameter("nomParam", nouvelUtilisateur.NomUtilisateur);
-            var param3 = new SqlParameter("prenomParam", nouvelUtilisateur.PrenomUtilisateur);
-            var param4 = new SqlParameter("mdpParam", nouvelUtilisateur.MotDePasse);
-            var param5 = new SqlParameter("photoParam", nouvelUtilisateur.Photo);
-            var param6 = new SqlParameter("ramQParam", nouvelUtilisateur.RamQ);
-            var param7 = new SqlParameter("ageParam", nouvelUtilisateur.Age);
+            dbContext.Utilisateurs.Add(nouvelUtilisateur);
+            await dbContext.SaveChangesAsync();
+            //var param1 = new SqlParameter("courrielParam", nouvelUtilisateur.Courriel);
+            //var param2 = new SqlParameter("nomParam", nouvelUtilisateur.NomUtilisateur);
+            //var param3 = new SqlParameter("prenomParam", nouvelUtilisateur.PrenomUtilisateur);
+            //var param4 = new SqlParameter("mdpParam", nouvelUtilisateur.MotDePasse);
+            //var param5 = new SqlParameter("photoParam", nouvelUtilisateur.Photo);
+            //var param6 = new SqlParameter("ramQParam", nouvelUtilisateur.RamQ);
+            //var param7 = new SqlParameter("ageParam", nouvelUtilisateur.Age);
 
-            await dbContext.Database.ExecuteSqlRawAsync("EXECUTE UP_InscrireUtilisateur @courrielParam, @nomParam, @prenomParam, @mdpParam, @photoParam, @ramQParam, @ageParam", param1, param2, param3, param4, param5, param6, param7);
+            //await dbContext.Database.ExecuteSqlRawAsync("EXECUTE UP_InscrireUtilisateur @courrielParam, @nomParam, @prenomParam, @mdpParam, @photoParam, @ramQParam, @ageParam", param1, param2, param3, param4, param5=null, param6, param7);
+
+
         }
 
     }
