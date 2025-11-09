@@ -33,7 +33,7 @@ namespace OnyraProjet
             builder.Services.AddScoped<AddAuthenticationCore>();
 
             //mine
-            builder.Services.AddScoped<InscriptionService>();
+            //builder.Services.AddScoped<InscriptionService>();
 
             var app = builder.Build();
 

@@ -25,10 +25,6 @@ public partial class Utilisateur
     [StringLength(255)]
     public string Courriel { get; set; } = null!;
 
-    [Column("motDePasse")]
-    [StringLength(255)]
-    public string MotDePasse { get; set; } = null!;
-
     [Column("medecin")]
     public bool Medecin { get; set; }
 
@@ -54,6 +50,10 @@ public partial class Utilisateur
 
     [Column("sel")]
     public Guid? Sel { get; set; }
+
+    [Column("motDePasse")]
+    [MaxLength(64)]
+    public byte[] MotDePasse { get; set; } = null!;
 
     [InverseProperty("NoUtilisateurNavigation")]
     public virtual ICollection<Calendrier> Calendriers { get; set; } = new List<Calendrier>();

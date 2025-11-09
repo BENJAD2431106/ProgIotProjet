@@ -18,6 +18,8 @@ public partial class Prog3a25AllysonJadContext : DbContext
 
     public virtual DbSet<Calendrier> Calendriers { get; set; }
 
+    public virtual DbSet<CalendrierUtilisateur> CalendrierUtilisateurs { get; set; }
+
     public virtual DbSet<Donnee> Donnees { get; set; }
 
     public virtual DbSet<DonneesCalendrier> DonneesCalendriers { get; set; }
@@ -40,6 +42,11 @@ public partial class Prog3a25AllysonJadContext : DbContext
             entity.HasOne(d => d.NoUtilisateurNavigation).WithMany(p => p.Calendriers)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Calendrier");
+        });
+
+        modelBuilder.Entity<CalendrierUtilisateur>(entity =>
+        {
+            entity.ToView("calendrierUtilisateur");
         });
 
         modelBuilder.Entity<Donnee>(entity =>
@@ -75,6 +82,7 @@ public partial class Prog3a25AllysonJadContext : DbContext
             entity.ToTable(tb => tb.HasTrigger("trig_Default_Medecin"));
 
             entity.Property(e => e.Config).HasDefaultValue(true);
+            entity.Property(e => e.MotDePasse).IsFixedLength();
             entity.Property(e => e.RamQ).IsFixedLength();
 
             entity.HasOne(d => d.MedecinAttitreNavigation).WithMany(p => p.InverseMedecinAttitreNavigation).HasConstraintName("FK_Utilisateurs");
