@@ -19,4 +19,10 @@ BEGIN
 		SET @noUtiliateur =(SELECT noUtilisateur FROM Utilisateurs WHERE @noUtiliateur = HASHBYTES('SHA2_512', @motDePasse + CAST(@sel AS NVARCHAR(36))));
 END;
 
-exec UP_ConnexionUtilisateur
+GO
+DECLARE @no INT
+EXEC UP_ConnexionUtilisateur 
+   @courriel = 'exemple@mail.com', 
+   @motDePasse = '1234', 
+   @noUtilisateur = @no OUTPUT
+SELECT @no
