@@ -1,5 +1,5 @@
 ﻿@page "/Inscription"
-
+@using OnyraProjet.Authentication
 @inject OnyraProjet.Services.InscriptionService inscriptionService
 
 @using OnyraProjet.Models
@@ -57,6 +57,7 @@
         try
         {
             await inscriptionService.AjouterUtilisateur_UP(nouvelUtilisateur);
+
         }
         catch(Exception e)
         {
