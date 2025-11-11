@@ -28,9 +28,6 @@ public partial class Prog3a25ProductionAllysonJadContext : DbContext
 
     public virtual DbSet<Utilisateur> Utilisateurs { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Data Source=dicjwin01.cegepjonquiere.ca;Initial Catalog=PROG3A25_Production_AllysonJad;MultipleActiveResultSets=true;User Id=prog3e05;Password=visage30");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Calendrier>(entity =>
@@ -72,6 +69,7 @@ public partial class Prog3a25ProductionAllysonJadContext : DbContext
 
             entity.Property(e => e.Config).HasDefaultValue(true);
             entity.Property(e => e.MotDePasse).IsFixedLength();
+            entity.ToTable(tb => tb.HasTrigger("trig_Default_Medecin"));
 
             entity.HasOne(d => d.MedecinAttitreNavigation).WithMany(p => p.InverseMedecinAttitreNavigation).HasConstraintName("FK_Utilisateurs");
         });

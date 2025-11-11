@@ -1,10 +1,9 @@
-﻿@* @page "/Inscription"
+﻿@page "/Inscription"
 
 @inject OnyraProjet.Services.InscriptionService inscriptionService
 
 @using OnyraProjet.Models
-
-@attribute [StreamRendering]
+@rendermode InteractiveServer
 
 <PageTitle>Inscription</PageTitle>
 <h3><strong>Inscription</strong></h3>
@@ -27,7 +26,7 @@
             <label for="inputPassword6" class="col-form-label">Password</label>
         </div>
         <div class="col-auto">
-            <InputText type="password" id="inputPassword6" class="form-control" aria-describedby="passwordHelpInline" @bind-Value=nouvelUtilisateur.MotDePasse placeholder ="Enter Password"> </InputText>
+            <InputText type="password" id="inputPassword6" class="form-control" aria-describedby="passwordHelpInline" @bind-Value=nouvelUtilisateur.mdpInscription placeholder ="Enter Password"> </InputText>
         </div>
         <div class="col-auto">
             <span id="passwordHelpInline" class="form-text">
@@ -47,7 +46,7 @@
         <label for="age">Age </label>
         <InputNumber type="text" class="form-control" id="InputAge" aria-describedby="ageHelp" placeholder="Enter your Age" @bind-value=nouvelUtilisateur.Age> </InputNumber>
     </div>
-    <button @onclick="() => Inscrire()"class="btn btn-primary">Submit</button>
+    <button @onclick="Inscrire" class="btn btn-primary">Submit</button>
 </EditForm>
 
 @code
@@ -66,4 +65,3 @@
 
     }
 } 
- *@

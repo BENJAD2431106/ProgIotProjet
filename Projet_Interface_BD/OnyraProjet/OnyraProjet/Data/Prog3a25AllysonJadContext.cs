@@ -30,9 +30,6 @@ public partial class Prog3a25AllysonJadContext : DbContext
 
     public virtual DbSet<Utilisateur> Utilisateurs { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Data Source=dicjwin01.cegepjonquiere.ca;Initial Catalog=PROG3A25_AllysonJad;MultipleActiveResultSets=true;User Id=prog3e05;Password=visage30");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Calendrier>(entity =>

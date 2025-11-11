@@ -6,6 +6,7 @@ using Microsoft.Identity.Client;
 using OnyraProjet.Authentication;
 using OnyraProjet.Components;
 using OnyraProjet.Data;
+using OnyraProjet.Models;
 using OnyraProjet.Services;
 
 namespace OnyraProjet
@@ -33,7 +34,8 @@ namespace OnyraProjet
             builder.Services.AddScoped<AddAuthenticationCore>();
 
             //mine
-            //builder.Services.AddScoped<InscriptionService>();
+            builder.Services.AddScoped<InscriptionService>();
+
 
             var app = builder.Build();
 
