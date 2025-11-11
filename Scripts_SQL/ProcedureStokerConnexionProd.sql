@@ -3,7 +3,7 @@ GO
 CREATE PROCEDURE UP_ConnexionUtilisateur 
 	@courriel NVARCHAR(255), 
 	@motDePasse NVARCHAR(255),
-	@noUtiliateur INT OUTPUT -- changer ça
+	@noUtilisateur INT OUTPUT -- changer ça
 AS
 BEGIN
 	SET NOCOUNT ON
