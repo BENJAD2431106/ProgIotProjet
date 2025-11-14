@@ -114,6 +114,18 @@ class InterfaceCapteurs(ctk.CTk):
         self.label_timer.pack(pady=5)
 
         # -------------------------
+        # NOUVEAU LABEL INFO
+        # -------------------------
+        self.label_info = ctk.CTkLabel(self, text="", font=("Arial", 16))
+        self.label_info.pack(pady=5)
+
+        # -------------------------
+        # LABEL WARNING
+        # -------------------------
+        self.label_warning = ctk.CTkLabel(self, text="", font=("Arial", 18))
+        self.label_warning.pack(pady=5)
+
+        # -------------------------
         # FRAME TABLEAU + GRAPHIQUE
         # -------------------------
         self.frame_data_graph = ctk.CTkFrame(self, corner_radius=15)
@@ -125,7 +137,7 @@ class InterfaceCapteurs(ctk.CTk):
         self.labels_table = []
 
         # Graphique à droite
-        self.fig, self.ax = plt.subplots(figsize=(6,4), facecolor="#2b2b2b")  # gris foncé pour intégrer à Ctk
+        self.fig, self.ax = plt.subplots(figsize=(6,4), facecolor="#2b2b2b")
         self.ax.set_facecolor("#2b2b2b")
         self.ax.tick_params(colors='white', labelcolor='white')
         self.ax.spines['bottom'].set_color('white')
@@ -191,6 +203,19 @@ class InterfaceCapteurs(ctk.CTk):
         self.label_son_value.configure(text=f"{int(self.current_son)} dB")
         self.jauge_son.set(min((self.current_son - 20) / 100, 1))
 
+        # Message info supplémentaire
+        if lumiere > 2000 or son > 60:
+            self.label_info.configure(
+                text="ℹ Attention : Lumière > 2000 lux ou Son > 60 dB", text_color="yellow")
+        else:
+            self.label_info.configure(text="ℹ Lumière et Son dans les limites idéales", text_color="green")
+
+        # Message warning ou positif basé sur les valeurs brutes
+        if lumiere > 5000 or son > 100:
+            self.label_warning.configure(text="⚠ Conditions non idéales", text_color="red")
+        else:
+            self.label_warning.configure(text="✓ Vous dormez dans de bonnes conditions", text_color="green")
+
         # Ajouter la donnée dans la table
         timestamp = datetime.now().strftime("%H:%M:%S")
         self.data.append((timestamp, int(self.current_lumiere), int(self.current_son)))
@@ -226,7 +251,6 @@ class InterfaceCapteurs(ctk.CTk):
         if not self.data:
             return
 
-        # prendre les 50 dernières valeurs
         data_recent = self.data[-50:]
         times = [d[0] for d in data_recent]
         lumiere = [d[1] for d in data_recent]
@@ -239,7 +263,7 @@ class InterfaceCapteurs(ctk.CTk):
         self.ax.set_xlabel("Temps", color='white')
         self.ax.set_ylabel("Valeurs", color='white')
         self.ax.legend()
-        self.ax.tick_params(axis='x', rotation=45, colors='white')
+        self.ax.tick_params(axis='x', rotation=0, colors='white')
         self.ax.set_facecolor("#2b2b2b")
         self.fig.tight_layout()
         self.canvas.draw()
@@ -267,7 +291,6 @@ class InterfaceCapteurs(ctk.CTk):
             self.running = False
             self.compteur_running = False
             self.status.configure(text="Capture terminée")
-            # Calculer moyennes
             if self.data:
                 moyenne_lumiere = sum([d[1] for d in self.data]) / len(self.data)
                 moyenne_son = sum([d[2] for d in self.data]) / len(self.data)
@@ -287,3 +310,7 @@ class InterfaceCapteurs(ctk.CTk):
 if __name__ == "__main__":
     app = InterfaceCapteurs()
     app.mainloop()
+
+
+
+#changer le warning !!!!!!!!!!!!!!!!!!!
