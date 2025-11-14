@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import InterfacePrincipalIot 
 from tkinter import messagebox
 from PIL import Image
 
@@ -14,7 +15,7 @@ class App(ctk.CTk):
 
         self.page_accueil = Accueil(self)
         self.page_login = LoginPage(self)
-        self.page_home = HomePage(self)
+        self.page_data = InterfacePrincipalIot.InterfaceCapteurs(self)
 
         self.show_page(self.page_accueil)
 
@@ -82,7 +83,7 @@ class LoginPage(BackgroundPage):
 
         if email == "admin" and password == "1234":
             messagebox.showinfo("Succès", "Connexion réussie !")
-            master.show_page(master.page_home)
+            master.show_page(master.page_data)
         else:
             messagebox.showerror("Erreur", "Identifiants incorrects.")
             self.username.delete(0, "end")
