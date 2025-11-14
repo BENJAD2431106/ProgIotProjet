@@ -16,14 +16,9 @@ def lire_capteur_son():
 # ----------------------------
 #       INTERFACE
 # ----------------------------
-class InterfaceCapteurs(ctk.CTk):
-    def __init__(self):
-        super().__init__()
-
-        self.title("Monitoring Capteurs - Tableau et Graphique")
-        self.geometry("1200x750")
-        ctk.set_appearance_mode("dark")
-        ctk.set_default_color_theme("blue")
+class InterfaceCapteurs(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master)
 
         self.running = False
         self.refresh_rate = 1000  # ms
@@ -98,11 +93,6 @@ class InterfaceCapteurs(ctk.CTk):
                                          fg_color="orange", hover_color="#ffaa00",
                                          command=self.stop_capture)
         self.bouton_stop.grid(row=0, column=2, padx=10)
-
-        self.bouton_quit = ctk.CTkButton(self.frame_btns, text="Quitter", width=160,
-                                         fg_color="red", hover_color="#aa0000",
-                                         command=self.quitter)
-        self.bouton_quit.grid(row=0, column=3, padx=10)
 
         # -------------------------
         # STATUS ET TIMER
@@ -194,7 +184,6 @@ class InterfaceCapteurs(ctk.CTk):
         lumiere = lire_capteur_lumiere()
         son = lire_capteur_son()
 
-        # Smooth update
         self.current_lumiere = self.smooth_update(self.current_lumiere, lumiere)
         self.label_lumiere_value.configure(text=f"{int(self.current_lumiere)} lux")
         self.jauge_lumiere.set(min(self.current_lumiere / 8000, 1))
@@ -217,6 +206,7 @@ class InterfaceCapteurs(ctk.CTk):
             self.label_warning.configure(text="✓ Vous dormez dans de bonnes conditions", text_color="green")
 
         # Ajouter la donnée dans la table
+
         timestamp = datetime.now().strftime("%H:%M:%S")
         self.data.append((timestamp, int(self.current_lumiere), int(self.current_son)))
         self.rafraichir_table()
@@ -298,19 +288,9 @@ class InterfaceCapteurs(ctk.CTk):
                     text=f"Moyennes : Lumière = {int(moyenne_lumiere)} lux, Son = {int(moyenne_son)} dB"
                 )
 
+
     def quitter(self):
         self.running = False
         self.compteur_running = False
         self.destroy()
 
-
-# ----------------------------
-# RUN APP
-# ----------------------------
-if __name__ == "__main__":
-    app = InterfaceCapteurs()
-    app.mainloop()
-
-
-
-#changer le warning !!!!!!!!!!!!!!!!!!!
