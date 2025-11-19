@@ -27,14 +27,18 @@ namespace OnyraProjet
             builder.Services.AddRazorComponents();
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+
+            //builder.Services.AddServerSideBlazor();
             builder.Services.AddScoped<ConnexionService>();
             builder.Services.AddScoped<WeatherService>();
             builder.Services.AddScoped<ProtectedSessionStorage>();
             builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthentificationStateProvider>();
-            builder.Services.AddScoped<AddAuthenticationCore>();
+            builder.Services.AddAuthenticationCore();
 
             //mine
             builder.Services.AddScoped<InscriptionService>();
+            builder.Services.AddScoped<CalendrierService>();
+
 
 
             var app = builder.Build();
