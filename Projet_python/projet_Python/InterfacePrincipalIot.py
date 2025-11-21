@@ -104,9 +104,12 @@ class InterfaceCapteurs(ctk.CTkFrame):
         self.label_timer.pack(pady=5)
 
         # -------------------------
-        # NOUVEAU LABEL INFO
+        # NOUVEAU LABEL INFO (FIXE)
         # -------------------------
-        self.label_info = ctk.CTkLabel(self, text="", font=("Arial", 16))
+        self.label_info = ctk.CTkLabel(self,
+                                       text="ℹ Attention : Lumière > 2000 lux ou Son > 60 dB",
+                                       font=("Arial", 16),
+                                       text_color="yellow")
         self.label_info.pack(pady=5)
 
         # -------------------------
@@ -192,21 +195,15 @@ class InterfaceCapteurs(ctk.CTkFrame):
         self.label_son_value.configure(text=f"{int(self.current_son)} dB")
         self.jauge_son.set(min((self.current_son - 20) / 100, 1))
 
-        # Message info supplémentaire
-        if lumiere > 2000 or son > 60:
-            self.label_info.configure(
-                text="ℹ Attention : Lumière > 2000 lux ou Son > 60 dB", text_color="yellow")
-        else:
-            self.label_info.configure(text="ℹ Lumière et Son dans les limites idéales", text_color="green")
-
-        # Message warning ou positif basé sur les valeurs brutes
+        # -------------------------------
+        # WARNING (ce message continue de changer)
+        # -------------------------------
         if lumiere > 5000 or son > 100:
             self.label_warning.configure(text="⚠ Conditions non idéales", text_color="red")
         else:
             self.label_warning.configure(text="✓ Vous dormez dans de bonnes conditions", text_color="green")
 
         # Ajouter la donnée dans la table
-
         timestamp = datetime.now().strftime("%H:%M:%S")
         self.data.append((timestamp, int(self.current_lumiere), int(self.current_son)))
         self.rafraichir_table()
@@ -288,9 +285,7 @@ class InterfaceCapteurs(ctk.CTkFrame):
                     text=f"Moyennes : Lumière = {int(moyenne_lumiere)} lux, Son = {int(moyenne_son)} dB"
                 )
 
-
     def quitter(self):
         self.running = False
         self.compteur_running = False
         self.destroy()
-
