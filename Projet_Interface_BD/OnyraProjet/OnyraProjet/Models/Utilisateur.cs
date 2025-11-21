@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace OnyraProjet.Models;
 
+[Index("Courriel", Name = "Unique_Courriel", IsUnique = true)]
 public partial class Utilisateur
 {
     [Key]
@@ -24,10 +25,6 @@ public partial class Utilisateur
     [StringLength(255)]
     public string Courriel { get; set; } = null!;
 
-    [Column("motDePasse")]
-    [MaxLength(64)]
-    public byte[] MotDePasse { get; set; } = null!;
-
     [Column("medecin")]
     public bool Medecin { get; set; }
 
@@ -43,16 +40,20 @@ public partial class Utilisateur
     [Column("dateRdv")]
     public DateOnly? DateRdv { get; set; }
 
-    [Column("assuranceSociale")]
-    [StringLength(9)]
+    [Column("ramQ")]
+    [StringLength(12)]
     [Unicode(false)]
-    public string AssuranceSociale { get; set; } = null!;
+    public string? RamQ { get; set; }
 
     [Column("config")]
     public bool? Config { get; set; }
 
     [Column("sel")]
-    public Guid Sel { get; set; }
+    public Guid? Sel { get; set; }
+
+    [Column("motDePasse")]
+    [MaxLength(64)]
+    public byte[] MotDePasse { get; set; } = null!;
 
     [InverseProperty("NoUtilisateurNavigation")]
     public virtual ICollection<Calendrier> Calendriers { get; set; } = new List<Calendrier>();

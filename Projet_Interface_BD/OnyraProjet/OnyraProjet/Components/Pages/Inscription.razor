@@ -1,0 +1,68 @@
+﻿@page "/Inscription"
+@using OnyraProjet.Authentication
+@inject OnyraProjet.Services.InscriptionService inscriptionService
+
+@using OnyraProjet.Models
+@rendermode InteractiveServer
+
+<PageTitle>Inscription</PageTitle>
+<h3><strong>Inscription</strong></h3>
+<EditForm Model="nouvelUtilisateur" formname="FormInscr">
+    <div class="form-group">
+        <label for="email">Email address</label>
+        <InputText type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email" @bind-Value=nouvelUtilisateur.Courriel> </InputText>
+        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+    </div>
+    <div class="form-group">
+        <label for="nom">First Name</label>
+        <InputText type="text" class="form-control" id="InputNom" aria-describedby="nomHelp" placeholder="Your First Name" @bind-Value=nouvelUtilisateur.PrenomUtilisateur></InputText>
+    </div>
+    <div class="form-group">
+        <label for="prenom">Last Name</label>
+        <InputText type="text" class="form-control" id="InputPrenom" aria-describedby="prenomHelp" placeholder="Your Last Name" @bind-Value=nouvelUtilisateur.NomUtilisateur></InputText>
+    </div>
+    <div class="row g-3 align-items-center">
+        <div class="col-auto">
+            <label for="inputPassword6" class="col-form-label">Password</label>
+        </div>
+        <div class="col-auto">
+            <InputText type="password" id="inputPassword6" class="form-control" aria-describedby="passwordHelpInline" @bind-Value=nouvelUtilisateur.mdpInscription placeholder ="Enter Password"> </InputText>
+        </div>
+        <div class="col-auto">
+            <span id="passwordHelpInline" class="form-text">
+                Must be 8-20 characters long.
+            </span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="exampleFormControlFile1">Load Your Photo</label>
+        <InputFile type="file" class="form-control-file" id="photo" @bind-value=nouvelUtilisateur.Photo> </InputFile>
+    </div>
+    <div class="form-group">
+        <label for="ramq">RamQ</label>
+        <InputText type="text" class="form-control" id="InputRamq" aria-describedby="ramqHelp" placeholder="Enter your 'RamQ'" @bind-value=nouvelUtilisateur.RamQ> </InputText>
+    </div>
+    <div class="form-group">
+        <label for="age">Age </label>
+        <InputNumber type="text" class="form-control" id="InputAge" aria-describedby="ageHelp" placeholder="Enter your Age" @bind-value=nouvelUtilisateur.Age> </InputNumber>
+    </div>
+    <button @onclick="Inscrire" class="btn btn-primary">Submit</button>
+</EditForm>
+
+@code
+{
+    Utilisateur? nouvelUtilisateur = new Utilisateur();
+    public async Task Inscrire()
+    {
+        try
+        {
+            await inscriptionService.AjouterUtilisateur_UP(nouvelUtilisateur);
+
+        }
+        catch(Exception e)
+        {
+            throw (e);
+        }
+
+    }
+} 
