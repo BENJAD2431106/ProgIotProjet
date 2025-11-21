@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.VisualBasic;
 using OnyraProjet.Data;
+using OnyraProjet.Models;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -13,17 +14,16 @@ namespace OnyraProjet.Services
     public class ConnexionService
     {
         private IDbContextFactory<Prog3a25ProductionAllysonJadContext> _factory;
-
         public ConnexionService(IDbContextFactory<Prog3a25ProductionAllysonJadContext> factory)
         {
             _factory = factory;
         }
 
-        public async Task<int> UP_ConnexionUtilisateur(string adresseCourriel, string motDePasse)
+        public async Task<Utilisateur> UP_ConnexionUtilisateur(string courriel, string motDePasse)
         {
             using var context = await _factory.CreateDbContextAsync();
 
-            var paramCourriel = new SqlParameter("@courriel", adresseCourriel);
+            var paramCourriel = new SqlParameter("@courriel", courriel);
             var paramMotDePasse = new SqlParameter("@motDePasse", motDePasse);
 
             var paramNoUtilisateur = new SqlParameter
@@ -37,11 +37,7 @@ namespace OnyraProjet.Services
                 "EXEC UP_ConnexionUtilisateur @courriel, @motDePasse, @noUtilisateur OUTPUT",
                 paramCourriel, paramMotDePasse, paramNoUtilisateur);
 
-            return (int)paramNoUtilisateur.Value;
-        }
-        public void Seconnecter()
-        {
-            
+            return (Utilisateur)paramNoUtilisateur.Value;
         }
     }
 }

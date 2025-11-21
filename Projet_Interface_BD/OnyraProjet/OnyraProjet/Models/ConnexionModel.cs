@@ -2,7 +2,7 @@
 {
     public class ConnexionModel
     {
-        public string AdresseCourriel { get; set; }
+        public string Courriel { get; set; }
         public string MotDePasse{ get; set; }
     }
 }
