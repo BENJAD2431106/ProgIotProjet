@@ -1,0 +1,350 @@
+﻿@page "/Test"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Globalization
+@using Authentication
+@using OnyraProjet.Models
+@using System.Security.Claims
+@inject OnyraProjet.Services.InscriptionService inscriptionService
+@inject OnyraProjet.Services.CalendrierService calendrierService
+@inject AuthenticationStateProvider AuthService
+@rendermode InteractiveServer
+<h3>Calendrier</h3>
+<div class="cal-page">
+    <!-- ================== PARTIE GAUCHE : CALENDRIER + FORM ================== -->
+    <div class="cal-main">
+        <div>
+            <button @onclick="PrevMonth">◀️</button>
+            <strong>@currentMonth.ToString("MMMM yyyy", frCulture)</strong>
+            <button @onclick="NextMonth">▶️</button>
+        </div>
+        <table style="margin-top:10px; border-collapse: collapse; width:100%;">
+            <thead>
+                <tr>
+                    @foreach (var dayName in dayNames)
+                    {
+                        <th style="padding:15px; border:1px solid #ccc;">@dayName</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for (int week = 0; week < 6; week++)
+                {
+                    <tr>
+                        @for (int day = 0; day < 7; day++)
+                        {
+                            var index = week * 7 + day;
+                            var date = days[index];
+                            var isCurrentMonth = date.Month == currentMonth.Month;
+                            var isSelected = date == selectedDate;
+                            <td class="calendar-cell @GetColorClass(date) @(isSelected ? "calendar-cell-selected" : "")"
+                                style="@GetCellStyle(isCurrentMonth, isSelected)"
+                                @onclick="() => SelectDay(date)">
+                                @date.Day
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (selectedDate != DateTime.MinValue)
+        {
+            <div style="margin-top:15px;">
+                <h4>
+                    Ajouter des données pour le
+                    @selectedDate.ToString("dd MMMM yyyy", frCulture)
+                </h4>
+                <EditForm Model="nouveauCalendrier">
+                    <div class="form-group">
+                        <label for="ressenti">Votre Ressenti :</label>
+                        <InputNumber class="form-control" id="ressenti"
+                                     @bind-Value=nouveauCalendrier.Ressenti></InputNumber>
+                    </div>
+                    <div class="form-group">
+                        <label for="hCoucherr">Date Du Coucher</label>
+                        <InputDate class="form-control" id="hCoucher"
+                                   @bind-Value=dateCoucher></InputDate>
+                        <label for="hCoucher">Heure Du Coucher</label>
+                        <input type="time" id="hhcoucher" @bind=heureCoucher />
+                    </div>
+                    <div class="form-group">
+                        <label for="hLeverr">Date Du Réveil</label>
+                        <InputDate class="form-control" id="hReveil"
+                                   @bind-Value=dateLever> </InputDate>
+                        <label for="hLever">Heure Du Réveil</label>
+                        <input type="time" id="hhlever" @bind=heureLever />
+                    </div>
+                    <div class="form-group">
+                        <label for="nbReveil">Le nombre de réveil</label>
+                        <InputNumber class="form-control" id="nbReveil"
+                                     @bind-Value=nouveauCalendrier.NbreReveil></InputNumber>
+                    </div>
+                    <div class="form-group">
+                        <label for="comments">Commentaires :</label>
+                        <InputTextArea class="form-control" id="commentaire"
+                                       @bind-Value=nouveauCalendrier.Commentaire></InputTextArea>
+                    </div>
+                    <button type="button" @onclick="AjouterCalendrier">Enregistrer</button>
+                    <button type="button" @onclick="GenerateCalendar">Annuler</button>
+                </EditForm>
+            </div>
+        }
+    </div>
+    <!-- ================== PARTIE DROITE : PANNEAU CAPTEURS ================== -->
+    <div class="cal-side">
+        @if (selectedDate != DateTime.MinValue)
+        {
+            <div class="side-card @(afficherPanneau ? "side-card-open" : "")">
+                <div class="side-header">
+                    <span>Données capteurs – @selectedDate.ToString("dd MMMM yyyy", frCulture)</span>
+                    <button type="button" class="side-close" @onclick="() => afficherPanneau = false">×</button>
+                </div>
+                @if (!afficherPanneau)
+                {
+                    <p class="side-empty">Sélectionnez un jour avec données.</p>
+                }
+                else if (!donneesCapteursDisponibles)
+                {
+                    <p class="side-empty">Aucune donnée capteur pour ce jour.</p>
+                }
+                else
+                {
+                    <div class="sensor-row">
+                        <span>Sommeil total :</span>
+                        <span>@dureeSommeilMinutes min</span>
+                    </div>
+                    <div class="sensor-row">
+                        <span>Sommeil profond :</span>
+                        <span>@dureeSommeilProfondMinutes min</span>
+                    </div>
+                    <div class="sensor-row">
+                        <span>Température :</span>
+                        <span>@temperatureMoyenneC.ToString("0.0") °C</span>
+                    </div>
+                    <div class="sensor-row">
+                        <span>Réveils détectés :</span>
+                        <span>@nbReveilsDetectes</span>
+                    </div>
+                    <div class="sensor-row">
+                        <span>Score :</span>
+                        <span>@scoreSommeil</span>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+<style>
+    .cal-page {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .cal-main {
+        flex: 1 1 500px;
+    }
+
+    .cal-side {
+        flex: 0 0 280px;
+        position: relative;
+    }
+
+    .calendar-cell {
+        padding: 10px;
+        text-align: center;
+        border: 1px solid #ccc;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: background-color 0.15s ease, transform 0.05s ease;
+    }
+
+        .calendar-cell:hover {
+            transform: scale(1.02);
+        }
+
+    .calendar-cell-selected {
+        outline: 2px solid #2962ff;
+        font-weight: bold;
+    }
+
+    .day-good {
+        background-color: #e6f4ea;
+        color: #1e4620;
+    }
+
+    .day-bad {
+        background-color: #fce8e6;
+        color: #b3261e;
+    }
+
+    .side-card {
+        position: sticky;
+        top: 10px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        padding: 12px 14px;
+        min-height: 120px;
+        opacity: 0.0;
+        transform: translateX(10px);
+        transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+
+    .side-card-open {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .side-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .side-close {
+        border: none;
+        background: transparent;
+        font-size: 1.1rem;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .sensor-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        font-size: 0.9rem;
+    }
+
+    .side-empty {
+        font-size: 0.9rem;
+        color: #666;
+    }
+</style>
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+    OnyraProjet.Models.Calendrier? nouveauCalendrier = new OnyraProjet.Models.Calendrier();
+    private DateTime currentMonth = DateTime.Today;
+    private DateTime selectedDate = DateTime.MinValue;
+    private DateOnly dateCoucher { get; set; }
+    private DateOnly dateLever { get; set; }
+    private DateTime heureCoucher { get; set; }
+    private DateTime heureLever { get; set; }
+    private DateTime CoucherComplet => dateCoucher.ToDateTime(TimeOnly.FromDateTime(heureCoucher));
+    private DateTime LeverComplet => dateLever.ToDateTime(TimeOnly.FromDateTime(heureLever));
+    private string note = "";
+    private string[] dayNames = new[] { "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim" };
+    private List<DateTime> days = new();
+    private readonly CultureInfo frCulture = CultureInfo.GetCultureInfo("fr-FR");
+    // ====== ETAT DU PANNEAU ======
+    private bool afficherPanneau = false;
+    // ====== DONNEES CAPTEURS (à alimenter par ta BD) ======
+    private bool donneesCapteursDisponibles;
+    private int dureeSommeilMinutes;
+    private int dureeSommeilProfondMinutes;
+    private double temperatureMoyenneC;
+    private int nbReveilsDetectes;
+    private int scoreSommeil;
+    protected override void OnInitialized()
+    {
+        GenerateCalendar();
+    }
+    private void GenerateCalendar()
+    {
+        days.Clear();
+        var firstDay = new DateTime(currentMonth.Year, currentMonth.Month, 1);
+        int offset = ((int)firstDay.DayOfWeek + 6) % 7; // commence lundi
+        var startDate = firstDay.AddDays(-offset);
+        for (int i = 0; i < 42; i++)
+        {
+            days.Add(startDate.AddDays(i));
+        }
+    }
+    private void PrevMonth()
+    {
+        currentMonth = currentMonth.AddMonths(-1);
+        GenerateCalendar();
+    }
+    private void NextMonth()
+    {
+        currentMonth = currentMonth.AddMonths(1);
+        GenerateCalendar();
+    }
+    private void SelectDay(DateTime date)
+    {
+        selectedDate = date;
+        dateLever = DateOnly.FromDateTime(selectedDate);
+        dateCoucher = DateOnly.FromDateTime(selectedDate);
+        DateOnly dateDB = DateOnly.FromDateTime(selectedDate);
+        nouveauCalendrier.Dates = dateDB;
+        ChargerDonneesCapteurs(dateDB);
+    }
+    private string GetCellStyle(bool isCurrentMonth, bool isSelected)
+    {
+        string baseStyle = "padding:6px; text-align:center; border:1px solid #ccc; cursor:pointer;";
+        if (!isCurrentMonth)
+            baseStyle += "color:gray;";
+        if (isSelected)
+            baseStyle += "background-color:lightblue; font-weight:bold;";
+        return baseStyle;
+    }
+    // couleur de la cellule selon la BD (à remplacer par ta vraie logique)
+    private string GetColorClass(DateTime date)
+    {
+        // TODO : ici tu mettras ta condition (hasData, facteur bon/mauvais, etc.)
+        // return "day-good";  // exemple vert
+        // return "day-bad";   // exemple rouge
+        return "";
+    }
+    public async Task AjouterCalendrier()
+    {
+        Console.WriteLine($"Note pour {selectedDate.ToShortDateString()} : {note}");
+        note = "";
+        selectedDate = DateTime.MinValue;
+        try
+        {
+            var authState = await authenticationState;
+            var idUtil = authState.User.FindFirst(c => c.Type.Contains("nameidentifier"));
+            nouveauCalendrier.NoUtilisateur = int.Parse(idUtil.Value);
+            nouveauCalendrier.HeureCoucher = CoucherComplet;
+            nouveauCalendrier.HeureLever = LeverComplet;
+            await calendrierService.AjouterCalendrier(nouveauCalendrier);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+    }
+    // charge les données capteurs pour le panneau (à connecter à ta BD)
+    private void ChargerDonneesCapteurs(DateOnly dateDB)
+    {
+        // TODO : remplace cette partie par un appel à ta table capteurs.
+        // ici, juste un exemple de maquette :
+        afficherPanneau = true;
+        // exemple : données uniquement pour aujourd'hui
+        if (dateDB == DateOnly.FromDateTime(DateTime.Today))
+        {
+            donneesCapteursDisponibles = true;
+            dureeSommeilMinutes = 433;
+            dureeSommeilProfondMinutes = 122;
+            temperatureMoyenneC = 17.8;
+            nbReveilsDetectes = 3;
+            scoreSommeil = 74;
+        }
+        else
+        {
+            donneesCapteursDisponibles = false;
+            dureeSommeilMinutes = 0;
+            dureeSommeilProfondMinutes = 0;
+            temperatureMoyenneC = 0;
+            nbReveilsDetectes = 0;
+            scoreSommeil = 0;
+        }
+    }
+}
