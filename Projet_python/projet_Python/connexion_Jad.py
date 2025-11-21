@@ -60,7 +60,7 @@ class Accueil(BackgroundPage):
 
 class LoginPage(BackgroundPage):
     def __init__(self, master):
-        super().__init__(master, "Design.jfif")  # <-- même image
+        super().__init__(master, "design.jfif")  # <-- même image
 
         ctk.CTkLabel(self, text="Connexion",
                      font=("Arial", 30), bg_color="transparent").pack(pady=30)

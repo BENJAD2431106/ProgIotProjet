@@ -7,11 +7,44 @@ import matplotlib.pyplot as plt
 # ----------------------------
 #   DONNÉES BIDON
 # ----------------------------
+
+import spidev
+import time
+
+import pymssql
+from datetime import datetime
+
+try:
+    conn = pymssql.connect(
+        server="dicjwin01.cegepjonquiere.ca",  # IP du SQL Server
+        user="prog3e05",
+        password="visage30",
+        database="Prog3A25_AllysonJad"
+    )
+
+
+except Exception as e:
+    print("Erreur connexion :", e)
+
+# ----------------------------
+# Initialisation SPI
+# ----------------------------
+spi = spidev.SpiDev()
+spi.open(0, 0)           # Bus 0, Device 0 (CE0)
+spi.max_speed_hz = 1350000
+def lire_mcp3008(channel):
+    """Lecture d'un canal (0-7) du MCP3008."""
+    adc = spi.xfer2([1, (8 + channel) << 4, 0])
+    return ((adc[1] & 3) << 8) + adc[2]
+
+
 def lire_capteur_lumiere():
-    return random.randint(0, 8000)
+    lumiere = lire_mcp3008(1) 
+    return lumiere
 
 def lire_capteur_son():
-    return random.randint(20, 120)
+    son = lire_mcp3008(0) 
+    return son
 
 # ----------------------------
 #       INTERFACE
@@ -21,16 +54,18 @@ class InterfaceCapteurs(ctk.CTkFrame):
         super().__init__(master)
 
         self.running = False
-        self.refresh_rate = 1000  # ms
+        self.refresh_rate = 2000  # ms
         self.smooth_steps = 20
         self.data = []
+        self.initialTime = datetime.now()
+
 
         # -------------------------
         # TIMER SECONDES
         # -------------------------
         self.elapsed_seconds = 0
         self.compteur_running = False
-        self.max_capture_time = 30  # secondes
+        self.max_capture_time = 300  # secondes
 
         # -------------------------
         # TITRE
@@ -187,13 +222,13 @@ class InterfaceCapteurs(ctk.CTkFrame):
         lumiere = lire_capteur_lumiere()
         son = lire_capteur_son()
 
-        self.current_lumiere = self.smooth_update(self.current_lumiere, lumiere)
+        self.current_lumiere = lumiere
         self.label_lumiere_value.configure(text=f"{int(self.current_lumiere)} lux")
-        self.jauge_lumiere.set(min(self.current_lumiere / 8000, 1))
+        self.jauge_lumiere.set(min(self.current_lumiere / 500, 1))
 
-        self.current_son = self.smooth_update(self.current_son, son)
+        self.current_son = son
         self.label_son_value.configure(text=f"{int(self.current_son)} dB")
-        self.jauge_son.set(min((self.current_son - 20) / 100, 1))
+        self.jauge_son.set(min((self.current_son - 20) / 1000, 1))
 
         # -------------------------------
         # WARNING (ce message continue de changer)
@@ -210,6 +245,19 @@ class InterfaceCapteurs(ctk.CTkFrame):
         self.update_graph()
 
         self.after(self.refresh_rate, self.update_donnees)
+        sentTimetoDB = datetime.now()
+        if (sentTimetoDB - self.initialTime).total_seconds() >= 60:
+            self.initialTime=sentTimetoDB
+            # Date et heure actuelles
+            now = datetime.now()
+            cursor = conn.cursor()
+            # Insertion avec datetime
+            # cursor.execute(
+            cursor.execute(
+            "INSERT INTO Donnees (valLumiere, valSon, dateHeure, noUtilisateur) "
+            "VALUES ( %d, %d, %s, %d)",
+            (lumiere, son, now, 46))
+            conn.commit()
 
     # -------------------------
     # Rafraîchir le tableau
