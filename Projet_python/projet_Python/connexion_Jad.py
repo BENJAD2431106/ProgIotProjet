@@ -43,7 +43,7 @@ class BackgroundPage(ctk.CTkFrame):
 
 class Accueil(BackgroundPage):
     def __init__(self, master):
-        super().__init__(master, "design.jfif")  # <-- image sommeil
+        super().__init__(master, "design.png")  # <-- image sommeil
 
         ctk.CTkLabel(self, text="Bienvenue à Onyra",
                      font=("Calibri", 32), bg_color="transparent").pack(pady=40)
@@ -60,7 +60,9 @@ class Accueil(BackgroundPage):
 
 class LoginPage(BackgroundPage):
     def __init__(self, master):
-        super().__init__(master, "design.jfif")  # <-- même image
+
+        super().__init__(master, "design.png")  # <-- même image
+        25a4c3bfe110c5177b06f01e392b0392e8ce884b
 
         ctk.CTkLabel(self, text="Connexion",
                      font=("Arial", 30), bg_color="transparent").pack(pady=30)
@@ -92,7 +94,7 @@ class LoginPage(BackgroundPage):
 
 class HomePage(BackgroundPage):
     def __init__(self, master):
-        super().__init__(master, "design.jfif")
+        super().__init__(master, "design.png")
 
         ctk.CTkLabel(self, text="Bienvenue !",
                      font=("Arial", 30), bg_color="transparent").pack(pady=40)
