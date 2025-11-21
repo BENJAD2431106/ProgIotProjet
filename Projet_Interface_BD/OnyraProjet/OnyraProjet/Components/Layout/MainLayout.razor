@@ -10,11 +10,14 @@
         <div class="top-row px-4">
             <NavLink href="connexion" class="nav-link">Connexion</NavLink>
             <NavLink href="Inscription" class="nav-link">Inscription</NavLink>
+            <NavLink href="Profil" class="nav-link">Profil</NavLink>
+
             <AuthorizeView Roles="User">
                 <Authorized>
                     @* <p>Hello, @context.User.Identity.Name</p> *@
                 </Authorized>
             </AuthorizeView>
+
         </div>
 
         <article class="content px-4">
