@@ -1,5 +1,7 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using OnyraProjet.Authentication;
 using OnyraProjet.Data;
 using OnyraProjet.Models;
 using OnyraProjet.Partials;
@@ -14,9 +16,9 @@ namespace OnyraProjet.Services
         {
             this.myFactory = myFactory;
         }
-        public async Task AjouterUtilisateur_UP(Utilisateur nouvelUtilisateur)
+        public async Task AjouterUtilisateur_UP(Utilisateur nouvelUtilisateur, CustomAuthentificationStateProvider auth)
         {
-            var dbContext = myFactory.CreateDbContextAsync().Result;
+            var dbContext = await myFactory.CreateDbContextAsync();
 
             var param1 = new SqlParameter("@courrielParam", nouvelUtilisateur.Courriel);
             var param2 = new SqlParameter("@nomParam", nouvelUtilisateur.NomUtilisateur);
@@ -30,9 +32,13 @@ namespace OnyraProjet.Services
             var outPut = new SqlParameter("@no", System.Data.SqlDbType.Int);
             outPut.Direction=System.Data.ParameterDirection.Output;
          
-
-           dbContext.Database.ExecuteSqlRaw("EXECUTE UP_InscrireUtilisateur @courrielParam, @nomParam, @prenomParam, @mdpParam, NULL, @ramQParam, @ageParam, @no OUTPUT ", param1, param2, param3, param4, param6, param7, outPut);
-
+            dbContext.Database.ExecuteSqlRaw("EXECUTE UP_InscrireUtilisateur @courrielParam, @nomParam, @prenomParam, @mdpParam, NULL, @ramQParam, @ageParam, @no OUTPUT ", param1, param2, param3, param4, param6, param7, outPut);
+            //UserSession user = new UserSession(nouvelUtilisateur, "User");
+            UserSession2 user = new UserSession2();
+            user.Name = nouvelUtilisateur.PrenomUtilisateur + " " + nouvelUtilisateur.NomUtilisateur;
+            user.Id = (int)outPut.Value;
+            user.Role = "User";
+            await auth.UpDateAuthenticationState(user);
         }
 
     }

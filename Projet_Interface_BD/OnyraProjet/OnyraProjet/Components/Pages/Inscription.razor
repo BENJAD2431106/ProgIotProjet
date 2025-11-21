@@ -1,9 +1,11 @@
 ﻿@page "/Inscription"
+@using Microsoft.AspNetCore.Components.Authorization
 @using OnyraProjet.Authentication
 @inject OnyraProjet.Services.InscriptionService inscriptionService
-
 @using OnyraProjet.Models
 @rendermode InteractiveServer
+@inject AuthenticationStateProvider AuthService
+@inject NavigationManager nav
 
 <PageTitle>Inscription</PageTitle>
 <h3><strong>Inscription</strong></h3>
@@ -54,10 +56,11 @@
     Utilisateur? nouvelUtilisateur = new Utilisateur();
     public async Task Inscrire()
     {
+        var authentication = AuthService as CustomAuthentificationStateProvider;
         try
         {
-            await inscriptionService.AjouterUtilisateur_UP(nouvelUtilisateur);
-
+            await inscriptionService.AjouterUtilisateur_UP(nouvelUtilisateur, authentication);
+            nav.NavigateTo("/", forceLoad: true);
         }
         catch(Exception e)
         {
