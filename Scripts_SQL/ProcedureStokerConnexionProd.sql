@@ -3,7 +3,7 @@ GO
 CREATE PROCEDURE UP_ConnexionUtilisateur 
 	@courriel NVARCHAR(255), 
 	@motDePasse NVARCHAR(255),
-	@noUtilisateur INT OUTPUT -- changer ça
+	@noUtiliateur INT OUTPUT -- changer ça
 AS
 BEGIN
 	SET NOCOUNT ON
@@ -19,10 +19,4 @@ BEGIN
 		SET @noUtiliateur =(SELECT noUtilisateur FROM Utilisateurs WHERE @noUtiliateur = HASHBYTES('SHA2_512', @motDePasse + CAST(@sel AS NVARCHAR(36))));
 END;
 
-GO
-DECLARE @no INT
-EXEC UP_ConnexionUtilisateur 
-   @courriel = 'exemple@mail.com', 
-   @motDePasse = '1234', 
-   @noUtilisateur = @no OUTPUT
-SELECT @no
+exec UP_ConnexionUtilisateur
