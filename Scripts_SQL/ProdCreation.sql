@@ -37,30 +37,3 @@ ressenti				INT						NOT NULL,
 nbreReveil				INT						NULL,
 commentaire				NVARCHAR(255)			NULL,
 );
-------------
--- Modifier la colonne dans la table Donnees
-USE PROG3A25_Production_AllysonJad
-EXEC sp_rename 'Donnees.valTemperature', 'valLumiere', 'COLUMN';
---------------------------------------------------------------
--- Supprimer les vues existantes
-USE PROG3A25_Production_AllysonJad
-DROP VIEW IF EXISTS DonneesUtilisateur;
-DROP VIEW IF EXISTS DonneesCalendrier;
-
--- Recréer les vues avec la colonne modifiée
-CREATE VIEW DonneesUtilisateur AS
-	SELECT valLumiere, valSon, dateHeure, nomUtilisateur, prenomUtilisateur, age 
-	FROM Donnees d 
-	JOIN Utilisateurs u 
-	ON d.noUtilisateur = u.noUtilisateur;
-GO
-
-CREATE VIEW DonneesCalendrier AS
-	SELECT u.noUtilisateur, valLumiere, valSon, 
-	dateHeure, c.ressenti, c.heureCoucher, c.heureLever, c.dates
-	FROM Donnees d 
-	JOIN Utilisateurs u ON d.noUtilisateur = u.noUtilisateur
-	JOIN Calendrier c ON u.noUtilisateur = c.noUtilisateur;
-GO
-
-

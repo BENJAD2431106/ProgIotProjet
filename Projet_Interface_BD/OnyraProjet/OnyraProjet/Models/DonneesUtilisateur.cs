@@ -9,8 +9,8 @@ namespace OnyraProjet.Models;
 [Keyless]
 public partial class DonneesUtilisateur
 {
-    [Column("valLumiere")]
-    public double ValLumiere { get; set; }
+    [Column("valTemperature")]
+    public double ValTemperature { get; set; }
 
     [Column("valSon")]
     public double ValSon { get; set; }

@@ -69,7 +69,6 @@ public partial class Prog3a25ProductionAllysonJadContext : DbContext
 
             entity.Property(e => e.Config).HasDefaultValue(true);
             entity.Property(e => e.MotDePasse).IsFixedLength();
-            entity.ToTable(tb => tb.HasTrigger("trig_Default_Medecin"));
 
             entity.HasOne(d => d.MedecinAttitreNavigation).WithMany(p => p.InverseMedecinAttitreNavigation).HasConstraintName("FK_Utilisateurs");
         });
