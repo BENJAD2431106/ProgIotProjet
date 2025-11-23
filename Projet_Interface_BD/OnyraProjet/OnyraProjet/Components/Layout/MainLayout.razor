@@ -1,6 +1,8 @@
 ﻿@inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Authorization
-
+@using OnyraProjet.Authentication
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject NavigationManager nav
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -8,14 +10,16 @@
 
     <main>
         <div class="top-row px-4">
-            <NavLink href="connexion" class="nav-link">Connexion</NavLink>
-            <NavLink href="Inscription" class="nav-link">Inscription</NavLink>
-            <NavLink href="Profil" class="nav-link">Profil</NavLink>
-
             <AuthorizeView Roles="User">
                 <Authorized>
+                    <NavLink href="Profil" class="nav-link">Profil</NavLink>
+                    <NavLink @onclick="Deconnecter" class="nav-link">Déconnecter</NavLink>
                     @* <p>Hello, @context.User.Identity.Name</p> *@
                 </Authorized>
+                <NotAuthorized>
+                    <NavLink href="connexion" class="nav-link">Connexion</NavLink>
+                    <NavLink href="Inscription" class="nav-link">Inscription</NavLink>
+                </NotAuthorized>
             </AuthorizeView>
 
         </div>
@@ -31,3 +35,14 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+
+    public async Task Deconnecter()
+    {
+        var auth = authenticationStateProvider as CustomAuthentificationStateProvider;
+        await auth.UpDateAuthenticationState(null);
+        nav.NavigateTo("/", true);
+    }
+
+}

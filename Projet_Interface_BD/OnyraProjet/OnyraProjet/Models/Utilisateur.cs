@@ -53,6 +53,7 @@ public partial class Utilisateur
 
     [Column("motDePasse")]
     [MaxLength(64)]
+    [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
     public byte[] MotDePasse { get; set; } = null!;
 
     [InverseProperty("NoUtilisateurNavigation")]

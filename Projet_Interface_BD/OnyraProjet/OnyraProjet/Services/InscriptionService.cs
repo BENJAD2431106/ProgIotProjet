@@ -26,12 +26,12 @@ namespace OnyraProjet.Services
             var param4 = new SqlParameter("@mdpParam", nouvelUtilisateur.mdpInscription);
             var param5 = new SqlParameter("@photoParam", nouvelUtilisateur.Photo);
             param5.IsNullable = true;
-            param5.DbType = System.Data.DbType.Binary;  
+            param5.DbType = System.Data.DbType.Binary;
             var param6 = new SqlParameter("@ramQParam", nouvelUtilisateur.RamQ);
             var param7 = new SqlParameter("@ageParam", nouvelUtilisateur.Age);
             var outPut = new SqlParameter("@no", System.Data.SqlDbType.Int);
-            outPut.Direction=System.Data.ParameterDirection.Output;
-         
+            outPut.Direction = System.Data.ParameterDirection.Output;
+
             dbContext.Database.ExecuteSqlRaw("EXECUTE UP_InscrireUtilisateur @courrielParam, @nomParam, @prenomParam, @mdpParam, NULL, @ramQParam, @ageParam, @no OUTPUT ", param1, param2, param3, param4, param6, param7, outPut);
             //UserSession user = new UserSession(nouvelUtilisateur, "User");
             UserSession2 user = new UserSession2();
@@ -40,6 +40,11 @@ namespace OnyraProjet.Services
             user.Role = "User";
             await auth.UpDateAuthenticationState(user);
         }
+        public async Task<bool> UtilisateurExiste(string courriel)
+        {
+            var db = await myFactory.CreateDbContextAsync();
 
+            return await db.Utilisateurs.AnyAsync(u => u.Courriel == courriel);
+        }
     }
 }
