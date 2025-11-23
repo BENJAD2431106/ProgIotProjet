@@ -30,6 +30,21 @@ namespace OnyraProjet.Services
             }
 
         }
+        public async Task<string> SavoirSiRempli(DateTime date, int idUtilisateur)
+        {
+            using var db = await myCalendarFactory.CreateDbContextAsync();
+
+            bool existe = await db.Calendriers
+                .AnyAsync(c =>
+                    c.NoUtilisateur == idUtilisateur &&
+                    c.Dates == DateOnly.FromDateTime(date));
+
+            if (existe)
+                return "background-color: lightgreen;";
+
+            return "";
+        }
+
 
     }
 }
