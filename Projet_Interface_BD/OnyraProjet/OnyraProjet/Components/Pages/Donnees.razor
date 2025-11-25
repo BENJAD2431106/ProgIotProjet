@@ -24,10 +24,6 @@ else
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Ressenti</th>
-                <th>Heure Lever</th>
-                <th>Heure Coucher</th>
                 <th>Valeur Lumière</th>
                 <th>Valeur Son</th>
             </tr>
@@ -36,10 +32,6 @@ else
             @foreach (var d in donnees)
             {
                 <tr>
-                    <td>@d.Dates.ToString("d")</td>
-                    <td>@d.Ressenti</td>
-                    <td>@d.HeureLever.ToString("t")</td>
-                    <td>@d.HeureCoucher.ToString("t")</td>
                     <td>@d.ValLumiere</td>
                     <td>@d.ValSon</td>
                 </tr>
