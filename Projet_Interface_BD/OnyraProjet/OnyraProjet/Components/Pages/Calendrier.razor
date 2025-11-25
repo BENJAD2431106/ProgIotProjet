@@ -67,7 +67,7 @@
                     @selectedDate.ToString("dd MMMM yyyy", CultureInfo.GetCultureInfo("fr-FR"))
                 </h4>
 
-                <EditForm Model="nouveauCalendrier">
+                <EditForm Model="nouveauCalendrier" OnValidSubmit="HandleError">
 
                     <div class="form-group mb-2">
                         <label for="ressenti">Votre Ressenti :</label>
@@ -102,8 +102,8 @@
                         <InputTextArea class="form-control" id="commentaire"
                                        @bind-Value=nouveauCalendrier.Commentaire></InputTextArea>
                     </div>
-
-                    <button class="btn btn-success me-2" @onclick="AjouterCalendrier">Enregistrer</button>
+                    <p class="text-danger text-center">@message</p>
+                    <button class="btn btn-success me-2">Enregistrer</button>
                     <button class="btn btn-secondary" @onclick="GenerateCalendar">Annuler</button>
 
                 </EditForm>
@@ -115,6 +115,7 @@
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
+    string message = "";
     OnyraProjet.Models.Calendrier? nouveauCalendrier = new OnyraProjet.Models.Calendrier();
     private DateTime currentMonth = DateTime.Today;
     private DateTime selectedDate = DateTime.MinValue;
@@ -206,6 +207,17 @@
         }
         nouveauCalendrier = new Models.Calendrier();
 
+    }
+    public async Task HandleError()
+    {
+        message = string.Empty;
+        if (!string.IsNullOrEmpty(nouveauCalendrier.Ressenti.ToString()) && nouveauCalendrier.Ressenti > 10 || nouveauCalendrier.Ressenti < 1)
+        {
+            message = "Ressenti invalide.";
+            return;
+        }
+
+        await AjouterCalendrier();
     }
 }
 
