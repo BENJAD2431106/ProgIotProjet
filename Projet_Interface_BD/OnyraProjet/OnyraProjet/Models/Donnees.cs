@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace OnyraProjet.Models;
 
 [Keyless]
-public partial class DonneesCalendrier
+public partial class Donnees
 {
     [Column("noUtilisateur")]
     public int NoUtilisateur { get; set; }

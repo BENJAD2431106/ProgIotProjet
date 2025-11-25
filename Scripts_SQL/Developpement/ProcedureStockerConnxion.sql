@@ -10,14 +10,13 @@ BEGIN
 
 	IF NOT EXISTS(SELECT * FROM Utilisateurs WHERE @courriel=courriel)
 	BEGIN
-		SET @noUtiliateur = -1; 
+		SET @noUtilisateur = -1; 
 		RETURN;
 	END 
 	ELSE 
-		SET @noUtiliateur =(SELECT noUtilisateur FROM Utilisateurs WHERE  @courriel=courriel AND motDePasse = HASHBYTES('SHA2_512', @motDePasse + CAST(sel AS NVARCHAR(36))));
+		SET @noUtilisateur =(SELECT noUtilisateur FROM Utilisateurs WHERE  @courriel=courriel AND motDePasse = HASHBYTES('SHA2_512', @motDePasse + CAST(sel AS NVARCHAR(36))));
 END;
 GO
-
 DECLARE @noUtilisateur INT;
 exec UP_ConnexionUtilisateur
 	@courriel = 'allyson@gmail.com',
