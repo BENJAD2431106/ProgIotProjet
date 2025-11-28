@@ -5,8 +5,6 @@
 @using Authentication
 @using OnyraProjet.Models
 @using System.Security.Claims
-
-@inject OnyraProjet.Services.InscriptionService inscriptionService
 @inject OnyraProjet.Services.CalendrierService calendrierService
 @inject AuthenticationStateProvider AuthService
 @rendermode InteractiveServer
@@ -221,10 +219,7 @@
     }
 }
 
-@* //jarrive pas a faire une deuxieme insertion. DONE.
+@* 
 apres : -trouver comment afficher autre couleur si deja rempli(jour)
--si rempli rediriger vers page affichage: Temps sommeil total. hLever. hCoucher et donnees + condition pour sommeil bon ou pas bon.
 -si sommeil pas bon onlick prendre rendez-vous medecin.
--capturer erreurs calendrier insertion.
-
  *@

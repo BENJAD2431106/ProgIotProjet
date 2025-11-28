@@ -35,10 +35,18 @@ namespace OnyraProjet.Services
             dbContext.Database.ExecuteSqlRaw("EXECUTE UP_InscrireUtilisateur @courrielParam, @nomParam, @prenomParam, @mdpParam, NULL, @ramQParam, @ageParam, @no OUTPUT ", param1, param2, param3, param4, param6, param7, outPut);
             //UserSession user = new UserSession(nouvelUtilisateur, "User");
             UserSession2 user = new UserSession2();
-            user.Name = nouvelUtilisateur.PrenomUtilisateur + " " + nouvelUtilisateur.NomUtilisateur;
-            user.Id = (int)outPut.Value;
-            user.Role = "User";
-            await auth.UpDateAuthenticationState(user);
+            try
+            {
+                user.Name = nouvelUtilisateur.PrenomUtilisateur + " " + nouvelUtilisateur.NomUtilisateur;
+                user.Id = (int)outPut.Value;
+                user.Role = "User";
+                await auth.UpDateAuthenticationState(user);
+            }
+            catch(Exception ex) 
+            {
+                Console.WriteLine(ex.Message);
+            }
+
         }
         public async Task<bool> UtilisateurExiste(string courriel)
         {

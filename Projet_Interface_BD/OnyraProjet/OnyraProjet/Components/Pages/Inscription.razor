@@ -86,8 +86,9 @@
         catch (Exception e)
         {
             throw (e);
+            message = "Inscription impossible.";
+
         }
-        message = "";
 
     }
     public async Task HandleError()
@@ -108,6 +109,11 @@
         if (existe)
         {
             message = "Un utilisateur avec ce courriel existe déjà.";
+            return;
+        }
+        if(nouvelUtilisateur.Age<0)
+        {
+            message = "Comment ca "+nouvelUtilisateur.Age+" ans? ";
             return;
         }
 

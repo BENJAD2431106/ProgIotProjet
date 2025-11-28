@@ -17,7 +17,7 @@ namespace OnyraProjet.Services
         }
         public async Task AjouterCalendrier(Calendrier calendrier)
         {
-            var dbContext = myCalendarFactory.CreateDbContextAsync().Result;
+            var dbContext = await myCalendarFactory.CreateDbContextAsync();
 
             try
             {
