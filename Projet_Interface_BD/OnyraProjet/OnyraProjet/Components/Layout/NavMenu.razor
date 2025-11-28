@@ -12,26 +12,31 @@
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Acceuil
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Accueil
             </NavLink>
         </div>
-
         <AuthorizeView Roles="User">
             <Authorized>
                 <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Calendrier">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Calendrier
+            <NavLink class="nav-link" href="AjoutCalendrier">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> AjoutCalendrier
             </NavLink>
         </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="VisualisationCalendrier">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> VisualisationCalendrier
+                    </NavLink>
+                </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="Donnees">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Donnees
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Données
             </NavLink>
         </div>
-
             </Authorized>
-        </AuthorizeView>
+            </AuthorizeView>
+                
+
     </nav>
 </div>
 

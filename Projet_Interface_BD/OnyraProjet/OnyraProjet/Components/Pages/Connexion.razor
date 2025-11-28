@@ -1,21 +1,57 @@
-﻿@using OnyraProjet.Services
-
+﻿@using OnyraProjet.Authentication
+@using OnyraProjet.Services
+@using OnyraProjet.Models
 @page "/connexion"
 @inject ConnexionService connexionservice
+@inject NavigationManager NavigationManager
+@inject CustomAuthentificationStateProvider authProvider
+@inject IJSRuntime JS
 
 <PageTitle>Connexion</PageTitle>
-<form>
+<EditForm Model="connexionModel" FormName="connexion">
+
     <h3><strong>Connexion</strong></h3>
     <div class="mb-3">
-        <label class="form-label">Addresse courriel</label>
-        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Onyra@gmail.com">
+        <label class="form-label">Adresse courriel</label>
+        <input type="email" class="form-control" @bind="courriel" placeholder="Onyra@gmail.com" />
     </div>
     <div class="mb-3">
         <label class="form-label">Mot de passe</label>
-        <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Mot de passe">
+        <input type="password" class="form-control" @bind="motDePasse" placeholder="Mot de passe" />
     </div>
-    <button type="submit" class="btn btn-primary">Se connecter</button>
+    <button type="submit" class="btn btn-primary" @onclick="SeConnecter">Se connecter</button>
     <div class="mb-3">
         <a href="Inscription">Êtes-vous membre ?</a>
     </div>
-</form>
+</EditForm>
+
+@code {
+
+    private ConnexionModel connexionModel = new ConnexionModel();
+
+    private string courriel = "";
+    private string motDePasse = "";
+    private string message = "";
+
+    private async Task SeConnecter()
+    {
+        var session = await connexionservice.ConnexionEtRecupererSession(courriel, motDePasse);
+
+        if (session != null)
+        {
+            await authProvider.UpDateAuthenticationState(session);
+            StateHasChanged(); 
+            NavigationManager.NavigateTo("/", true);
+
+        }
+        else
+        {
+            message = "Courriel ou mot de passe incorrect.";
+            await JS.InvokeVoidAsync("alert", message);
+        }
+    }
+
+
+
+
+}

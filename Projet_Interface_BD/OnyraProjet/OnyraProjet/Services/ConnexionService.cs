@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.VisualBasic;
+using OnyraProjet.Authentication;
 using OnyraProjet.Data;
 using OnyraProjet.Models;
 using System.Runtime.CompilerServices;
@@ -19,7 +20,7 @@ namespace OnyraProjet.Services
             _factory = factory;
         }
 
-        public async Task<Utilisateur> UP_ConnexionUtilisateur(string courriel, string motDePasse)
+        public async Task<UserSession2> ConnexionEtRecupererSession(string courriel, string motDePasse)
         {
             using var context = await _factory.CreateDbContextAsync();
 
@@ -37,7 +38,25 @@ namespace OnyraProjet.Services
                 "EXEC UP_ConnexionUtilisateur @courriel, @motDePasse, @noUtilisateur OUTPUT",
                 paramCourriel, paramMotDePasse, paramNoUtilisateur);
 
-            return (Utilisateur)paramNoUtilisateur.Value;
+            int id = (int)paramNoUtilisateur.Value;
+
+            if (id == -1)
+                return null;
+
+            // Va récupérer l'utilisateur dans la BD
+            var user = await context.Utilisateurs
+                .Where(u => u.NoUtilisateur == id)
+                .Select(u => new UserSession2
+                {
+                    Id = u.NoUtilisateur,
+                    Name = u.PrenomUtilisateur + " " + u.NomUtilisateur,
+                    Role = "User"
+                })
+                .FirstOrDefaultAsync();
+
+            return user;
         }
+
+
     }
 }

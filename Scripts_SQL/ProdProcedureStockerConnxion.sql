@@ -8,13 +8,13 @@ AS
 BEGIN
 	SET NOCOUNT ON
 
-	IF NOT EXISTS(SELECT * FROM Utilisateurs WHERE @courriel=courriel)
+	IF NOT EXISTS(SELECT * FROM noUtilisateur WHERE @courriel=courriel)
 	BEGIN
-		SET @noUtiliateur = -1; 
+		SET @noUtilisateur = -1; 
 		RETURN;
 	END 
 	ELSE 
-		SET @noUtiliateur =(SELECT noUtilisateur FROM Utilisateurs WHERE  @courriel=courriel AND motDePasse = HASHBYTES('SHA2_512', @motDePasse + CAST(sel AS NVARCHAR(36))));
+		SET @noUtilisateur =(SELECT noUtilisateur FROM Utilisateurs WHERE  @courriel=courriel AND motDePasse = HASHBYTES('SHA2_512', @motDePasse + CAST(sel AS NVARCHAR(36))));
 END;
 GO
 

@@ -1,32 +1,56 @@
 ﻿@page "/donnees"
+@using OnyraProjet.Models
+@using OnyraProjet.Services
+@using OnyraProjet.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject DonneesService donneesService
+@inject CustomAuthentificationStateProvider authProvider
+
+<PageTitle>Données</PageTitle>
+
+<h3>Données</h3>
+
+@if (donnees == null)
+{
+    <p>Chargement des données...</p>
+}
+else if (!donnees.Any())
+{
+    <p>Aucune donnée disponible.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Valeur Lumière</th>
+                <th>Valeur Son</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in donnees)
+            {
+                <tr>
+                    <td>@d.ValLumiere</td>
+                    <td>@d.ValSon</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<OnyraProjet.Models.Donnees> donnees;
 
 
-<PageTitle>Donnees</PageTitle>
-<h3>Donnees</h3>
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authProvider.GetAuthenticationStateAsync();
+        var userIdClaim = authState.User.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
+        int noUtilisateur = int.Parse(userIdClaim.Value);
 
-<table class="table table-hover">
-    <thead>
-        <tr>
-            <th scope="col">#</th>
-            <th scope="col">First</th>
-            <th scope="col">Last</th>
-            <th scope="col">Handle</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <th scope="row">1</th>
-            <td>Mark</td>
-            <td>Otto</td>
-        </tr>
-        <tr>
-            <th scope="row">2</th>
-            <td>Jacob</td>
-            <td>Thornton</td>
-        </tr>
-        <tr>
-            <th scope="row">3</th>
-            <td colspan="2">Larry the Bird</td>
-        </tr>
-    </tbody>
-</table>
+        // Récupérer uniquement les données de cet utilisateur
+        donnees = await donneesService.GetDonneesByUtilisateurAsync(noUtilisateur);
+    }
+}

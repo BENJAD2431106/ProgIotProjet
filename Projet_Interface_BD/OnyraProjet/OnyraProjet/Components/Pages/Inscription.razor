@@ -8,51 +8,72 @@
 @inject NavigationManager nav
 
 <PageTitle>Inscription</PageTitle>
-<h3><strong>Inscription</strong></h3>
-<EditForm Model="nouvelUtilisateur" formname="FormInscr">
-    <div class="form-group">
+
+<h3 class="text-center mb-4"><strong>Inscription</strong></h3>
+
+<EditForm Model="nouvelUtilisateur" formname="FormInscr" OnValidSubmit="HandleError" class="container p-4 border rounded shadow-sm" style="max-width: 500px;">
+
+    <div class="form-group mb-3">
         <label for="email">Email address</label>
-        <InputText type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email" @bind-Value=nouvelUtilisateur.Courriel> </InputText>
+        <InputText type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email" @bind-Value="nouvelUtilisateur.Courriel"></InputText>
         <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
     </div>
-    <div class="form-group">
+
+    <div class="form-group mb-3">
         <label for="nom">First Name</label>
-        <InputText type="text" class="form-control" id="InputNom" aria-describedby="nomHelp" placeholder="Your First Name" @bind-Value=nouvelUtilisateur.PrenomUtilisateur></InputText>
+        <InputText type="text" class="form-control" id="InputNom" placeholder="Your First Name" @bind-Value="nouvelUtilisateur.PrenomUtilisateur"></InputText>
     </div>
-    <div class="form-group">
+
+    <div class="form-group mb-3">
         <label for="prenom">Last Name</label>
-        <InputText type="text" class="form-control" id="InputPrenom" aria-describedby="prenomHelp" placeholder="Your Last Name" @bind-Value=nouvelUtilisateur.NomUtilisateur></InputText>
+        <InputText type="text" class="form-control" id="InputPrenom" placeholder="Your Last Name" @bind-Value="nouvelUtilisateur.NomUtilisateur"></InputText>
     </div>
-    <div class="row g-3 align-items-center">
+
+    <div class="row g-3 align-items-center mb-3">
         <div class="col-auto">
             <label for="inputPassword6" class="col-form-label">Password</label>
         </div>
-        <div class="col-auto">
-            <InputText type="password" id="inputPassword6" class="form-control" aria-describedby="passwordHelpInline" @bind-Value=nouvelUtilisateur.mdpInscription placeholder ="Enter Password"> </InputText>
+        <div class="col">
+            <InputText type="password" id="inputPassword6" class="form-control" aria-describedby="passwordHelpInline" @bind-Value="nouvelUtilisateur.mdpInscription" placeholder="Enter Password"></InputText>
         </div>
-        <div class="col-auto">
-            <span id="passwordHelpInline" class="form-text">
+        <div class="col-12">
+            <small id="passwordHelpInline" class="form-text text-muted">
                 Must be 8-20 characters long.
-            </span>
+            </small>
         </div>
     </div>
-    <div class="form-group">
-        <label for="exampleFormControlFile1">Load Your Photo</label>
-        <InputFile type="file" class="form-control-file" id="photo" @bind-value=nouvelUtilisateur.Photo> </InputFile>
+
+    <div class="mb-3">
+        <label for="inputPassword7" class="col-form-label">Verify Password</label>
+        <InputText type="password" id="inputPassword7" class="form-control" aria-describedby="passwordHelpInline7" @bind-Value="mdpValid" placeholder="Repeat your password"></InputText>
     </div>
-    <div class="form-group">
-        <label for="ramq">RamQ</label>
-        <InputText type="text" class="form-control" id="InputRamq" aria-describedby="ramqHelp" placeholder="Enter your 'RamQ'" @bind-value=nouvelUtilisateur.RamQ> </InputText>
+
+    <div class="form-group mb-3">
+        <label for="photo">Load Your Photo</label>
+        <InputFile type="file" class="form-control" id="photo" @bind-value="nouvelUtilisateur.Photo"></InputFile>
     </div>
-    <div class="form-group">
-        <label for="age">Age </label>
-        <InputNumber type="text" class="form-control" id="InputAge" aria-describedby="ageHelp" placeholder="Enter your Age" @bind-value=nouvelUtilisateur.Age> </InputNumber>
+
+    <div class="form-group mb-3">
+        <label for="InputRamq">RamQ</label>
+        <InputText type="text" class="form-control" id="InputRamq" placeholder="Enter your 'RamQ'" @bind-value="nouvelUtilisateur.RamQ"></InputText>
     </div>
-    <button @onclick="Inscrire" class="btn btn-primary">Submit</button>
+
+    <div class="form-group mb-3">
+        <label for="InputAge">Age</label>
+        <InputNumber type="text" class="form-control" id="InputAge" placeholder="Enter your Age" @bind-value="nouvelUtilisateur.Age"></InputNumber>
+    </div>
+
+    <p class="text-danger text-center">@message</p>
+
+    <button class="btn btn-primary w-100 mt-3">Submit</button>
+
 </EditForm>
+
 
 @code
 {
+    string mdpValid = "";
+    string message = "";
     Utilisateur? nouvelUtilisateur = new Utilisateur();
     public async Task Inscrire()
     {
@@ -62,10 +83,35 @@
             await inscriptionService.AjouterUtilisateur_UP(nouvelUtilisateur, authentication);
             nav.NavigateTo("/", forceLoad: true);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             throw (e);
         }
+        message = "";
 
     }
-} 
+    public async Task HandleError()
+    {
+        message = string.Empty;
+
+        if (nouvelUtilisateur.mdpInscription != mdpValid)
+        {
+            message = "Mot de passes non correspondants.";
+            return;
+        }
+        if (!string.IsNullOrEmpty(nouvelUtilisateur.RamQ) && nouvelUtilisateur.RamQ.Length > 12)
+        {
+            message = "La RAMQ doit contenir un maximum de 12 caractères.";
+            return;
+        }
+        bool existe = await inscriptionService.UtilisateurExiste(nouvelUtilisateur.Courriel);
+        if (existe)
+        {
+            message = "Un utilisateur avec ce courriel existe déjà.";
+            return;
+        }
+
+        await Inscrire();
+    }
+
+}

@@ -22,7 +22,7 @@ public partial class Prog3a25ProductionAllysonJadContext : DbContext
 
     public virtual DbSet<Donnee> Donnees { get; set; }
 
-    public virtual DbSet<DonneesCalendrier> DonneesCalendriers { get; set; }
+    public virtual DbSet<Donnees> DonneesCalendriers { get; set; }
 
     public virtual DbSet<DonneesUtilisateur> DonneesUtilisateurs { get; set; }
 
@@ -53,7 +53,7 @@ public partial class Prog3a25ProductionAllysonJadContext : DbContext
                 .HasConstraintName("FK_Donnees");
         });
 
-        modelBuilder.Entity<DonneesCalendrier>(entity =>
+        modelBuilder.Entity<Donnees>(entity =>
         {
             entity.ToView("DonneesCalendrier");
         });

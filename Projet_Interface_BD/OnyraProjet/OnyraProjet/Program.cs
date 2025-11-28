@@ -30,14 +30,19 @@ namespace OnyraProjet
 
             //builder.Services.AddServerSideBlazor();
             builder.Services.AddScoped<ConnexionService>();
+            builder.Services.AddScoped<ProfilService>();
+            //builder.Services.AddScoped<DonneeService>(); -- bizarre
+            builder.Services.AddScoped<DonneesService>();
             builder.Services.AddScoped<WeatherService>();
             builder.Services.AddScoped<ProtectedSessionStorage>();
             builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthentificationStateProvider>();
+            builder.Services.AddScoped<CustomAuthentificationStateProvider>(); 
             builder.Services.AddAuthenticationCore();
 
             //mine
             builder.Services.AddScoped<InscriptionService>();
             builder.Services.AddScoped<CalendrierService>();
+            builder.Services.AddScoped<VisualisateurCalendrierService>(); 
 
 
 
