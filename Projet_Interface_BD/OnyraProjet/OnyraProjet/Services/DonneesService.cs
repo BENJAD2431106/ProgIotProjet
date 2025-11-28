@@ -4,21 +4,21 @@ using OnyraProjet.Models;
 
 namespace OnyraProjet.Services
 {
-    public class DonneesService
+    public class DonneeService
     {
         private readonly IDbContextFactory<Prog3a25ProductionAllysonJadContext> _factory;
 
-        public DonneesService(IDbContextFactory<Prog3a25ProductionAllysonJadContext> factory)
+        public DonneeService(IDbContextFactory<Prog3a25ProductionAllysonJadContext> factory)
         {
             _factory = factory;
         }
 
-        public async Task<List<Donnees>> GetDonneesByUtilisateurAsync(int noUtilisateur)
+        public async Task<List<Donnee>> GetDonneesByUtilisateurAsync(int noUtilisateur)
         {
             using var context = await _factory.CreateDbContextAsync();
-            return await context.DonneesCalendriers
+            return await context.Donnees
                 .Where(d => d.NoUtilisateur == noUtilisateur)
-                .OrderByDescending(d => d.Dates)
+                .OrderByDescending(d => d.DateHeure)
                 .ToListAsync();
         }
 
