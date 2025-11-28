@@ -12,7 +12,9 @@
         <div class="top-row px-4">
             <AuthorizeView Roles="User">
                 <Authorized>
-                    <NavLink href="Profil" class="nav-link">Profil</NavLink>
+                    <a href="/Profil" class="text-dark ms-3">
+                        <i class="bi bi-person-circle fs-3"></i>
+                    </a>
                     <NavLink @onclick="Deconnecter" class="nav-link">Déconnecter</NavLink>
                     @* <p>Hello, @context.User.Identity.Name</p> *@
                 </Authorized>
