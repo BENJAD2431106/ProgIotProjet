@@ -2,20 +2,36 @@ import customtkinter as ctk
 import InterfacePrincipalIot 
 from tkinter import messagebox
 from PIL import Image
+import spidev
+import time
+
+import pymssql
+from datetime import datetime
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
+
+try:
+    conn = pymssql.connect(
+        server="dicjwin01.cegepjonquiere.ca",  # IP du SQL Server
+        user="prog3e05",
+        password="visage30",
+        database="Prog3A25_AllysonJad"
+    )
+
+
+except Exception as e:
+    print("Erreur connexion :", e)
 
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Mini-Onyra")
         self.geometry("700x450")  # plus grand pour l'image
-
         self.page_accueil = Accueil(self)
         self.page_login = LoginPage(self)
-        self.page_data = InterfacePrincipalIot.InterfaceCapteurs(self)
+        self.page_data = None
 
         self.show_page(self.page_accueil)
 
@@ -81,13 +97,38 @@ class LoginPage(BackgroundPage):
         email = self.username.get()
         password = self.password.get()
 
-        if email == "admin" and password == "1234":
+        conn = pymssql.connect(
+            server="dicjwin01.cegepjonquiere.ca",
+            user="prog3e05",
+            password="visage30",
+            database="Prog3A25_AllysonJad"
+        )
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            DECLARE @noUtiliateur INT;
+            EXEC UP_ConnexionUtilisateur @courriel=%s, @motDePasse=%s, @noUtiliateur=@noUtiliateur OUTPUT;
+            SELECT @noUtiliateur;
+        """, (email, password))
+
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if row and row[0] is not None and row[0] > 0:
+            user_id = row[0]
             messagebox.showinfo("Succès", "Connexion réussie !")
+
+            # ⚡ CRÉER LA PAGE avec le user_id
+            master.page_data = InterfacePrincipalIot.InterfaceCapteurs(master, user_id)
+
             master.show_page(master.page_data)
+
         else:
             messagebox.showerror("Erreur", "Identifiants incorrects.")
             self.username.delete(0, "end")
             self.password.delete(0, "end")
+
 
 
 class HomePage(BackgroundPage):

@@ -50,9 +50,9 @@ def lire_capteur_son():
 #       INTERFACE
 # ----------------------------
 class InterfaceCapteurs(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, user_id):
         super().__init__(master)
-
+        self.user_id = user_id  # <-- ON LE GARDE ICI
         self.running = False
         self.refresh_rate = 2000  # ms
         self.smooth_steps = 20
@@ -65,8 +65,6 @@ class InterfaceCapteurs(ctk.CTkFrame):
         # -------------------------
         self.elapsed_seconds = 0
         self.compteur_running = False
-        self.max_capture_time = 300  # secondes
-
         # -------------------------
         # TITRE
         # -------------------------
@@ -99,11 +97,11 @@ class InterfaceCapteurs(ctk.CTkFrame):
         self.frame_son = ctk.CTkFrame(self.frame_global, corner_radius=15)
         self.frame_son.pack(pady=10, padx=20, fill="x")
 
-        self.label_son_title = ctk.CTkLabel(self.frame_son, text="Capteur Son (dB)",
+        self.label_son_title = ctk.CTkLabel(self.frame_son, text="Capteur Son (Hz)",
                                             font=("Arial", 26, "bold"))
         self.label_son_title.pack(pady=8)
 
-        self.label_son_value = ctk.CTkLabel(self.frame_son, text="-- dB", font=("Arial", 32))
+        self.label_son_value = ctk.CTkLabel(self.frame_son, text="-- Hz", font=("Arial", 32))
         self.label_son_value.pack(pady=5)
 
         self.jauge_son = ctk.CTkProgressBar(self.frame_son, height=25)
@@ -142,7 +140,7 @@ class InterfaceCapteurs(ctk.CTkFrame):
         # NOUVEAU LABEL INFO (FIXE)
         # -------------------------
         self.label_info = ctk.CTkLabel(self,
-                                       text="ℹ Attention : Lumière > 2000 lux ou Son > 60 dB",
+                                       text="ℹ Attention : Lumière > 200 lux ou Son > 300 Hz",
                                        font=("Arial", 16),
                                        text_color="yellow")
         self.label_info.pack(pady=5)
@@ -185,7 +183,7 @@ class InterfaceCapteurs(ctk.CTkFrame):
         self.frame_moyenne.pack(pady=10, padx=20, fill="x")
 
         self.label_moyenne = ctk.CTkLabel(self.frame_moyenne,
-                                          text="Moyennes : Lumière = -- lux, Son = -- dB",
+                                          text="Moyennes : Lumière = -- lux, Son = -- Hz",
                                           font=("Arial", 20, "bold"))
         self.label_moyenne.pack(pady=10)
 
@@ -207,10 +205,8 @@ class InterfaceCapteurs(ctk.CTkFrame):
         if self.compteur_running:
             self.elapsed_seconds += 1
             self.label_timer.configure(text=f"Temps écoulé : {self.elapsed_seconds} s")
-            if self.elapsed_seconds >= self.max_capture_time:
-                self.stop_capture()
-            else:
-                self.after(1000, self.update_compteur)
+        else:
+            self.after(1000, self.update_compteur)
 
     # -------------------------
     # UPDATE DONNÉES
@@ -227,13 +223,13 @@ class InterfaceCapteurs(ctk.CTkFrame):
         self.jauge_lumiere.set(min(self.current_lumiere / 500, 1))
 
         self.current_son = son
-        self.label_son_value.configure(text=f"{int(self.current_son)} dB")
+        self.label_son_value.configure(text=f"{int(self.current_son)} Hz")
         self.jauge_son.set(min((self.current_son - 20) / 1000, 1))
 
         # -------------------------------
         # WARNING (ce message continue de changer)
         # -------------------------------
-        if lumiere > 5000 or son > 100:
+        if lumiere > 200 or son > 300:
             self.label_warning.configure(text="⚠ Conditions non idéales", text_color="red")
         else:
             self.label_warning.configure(text="✓ Vous dormez dans de bonnes conditions", text_color="green")
@@ -256,7 +252,7 @@ class InterfaceCapteurs(ctk.CTkFrame):
             cursor.execute(
             "INSERT INTO Donnees (valLumiere, valSon, dateHeure, noUtilisateur) "
             "VALUES ( %d, %d, %s, %d)",
-            (lumiere, son, now, 46))
+            (lumiere, son, now, self.user_id))
             conn.commit()
 
     # -------------------------
@@ -293,7 +289,7 @@ class InterfaceCapteurs(ctk.CTkFrame):
 
         self.ax.clear()
         self.ax.plot(times, lumiere, label="Lumière (lux)", color="orange", marker='o')
-        self.ax.plot(times, son, label="Son (dB)", color="skyblue", marker='o')
+        self.ax.plot(times, son, label="Son (Hz)", color="skyblue", marker='o')
         self.ax.set_title("Lumière et Son", color='white')
         self.ax.set_xlabel("Temps", color='white')
         self.ax.set_ylabel("Valeurs", color='white')
@@ -330,7 +326,7 @@ class InterfaceCapteurs(ctk.CTkFrame):
                 moyenne_lumiere = sum([d[1] for d in self.data]) / len(self.data)
                 moyenne_son = sum([d[2] for d in self.data]) / len(self.data)
                 self.label_moyenne.configure(
-                    text=f"Moyennes : Lumière = {int(moyenne_lumiere)} lux, Son = {int(moyenne_son)} dB"
+                    text=f"Moyennes : Lumière = {int(moyenne_lumiere)} lux, Son = {int(moyenne_son)} Hz"
                 )
 
     def quitter(self):
