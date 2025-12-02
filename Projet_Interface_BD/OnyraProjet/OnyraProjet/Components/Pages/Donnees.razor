@@ -42,29 +42,29 @@ else
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var d in donnee)
+                    @foreach (var donneesCapteurs in donnee)
                     {
                         <tr>
-                            <td>@d.DateHeure.ToString("d")</td>
-                            <td>@d.DateHeure.ToString("t")</td>
+                            <td>@donneesCapteurs.DateHeure.ToString("d")</td>
+                            <td>@donneesCapteurs.DateHeure.ToString("t")</td>
                             <td>
-                                @if (d.ValLumiere > 80)
+                                @if (donneesCapteurs.ValLumiere > 200)
                                 {
-                                    <span class="badge bg-danger">@d.ValLumiere</span>
+                                    <span class="badge bg-danger">@donneesCapteurs.ValLumiere</span>
                                 }
                                 else
                                 {
-                                    <span>@d.ValLumiere</span>
+                                    <span>@donneesCapteurs.ValLumiere</span>
                                 }
                             </td>
                             <td>
-                                @if (d.ValSon > 60)
+                                @if (donneesCapteurs.ValSon > 300)
                                 {
-                                    <span class="badge bg-danger">@d.ValSon</span>
+                                    <span class="badge bg-danger">@donneesCapteurs.ValSon</span>
                                 }
                                 else
                                 {
-                                    <span>@d.ValSon</span>
+                                    <span>@donneesCapteurs.ValSon</span>
                                 }
                             </td>
                         </tr>
@@ -81,7 +81,7 @@ else
                     var sonMax = donnee.Max(d => d.ValSon);
                 }
 
-                @if (lumiereMax > 80)
+                @if (lumiereMax > 200)
                 {
                     <div class="card border-danger shadow-sm mb-3">
                         <div class="card-body text-center">
@@ -91,7 +91,7 @@ else
                     </div>
                 }
 
-                @if (sonMax > 60)
+                @if (sonMax > 300)
                 {
                     <div class="card border-danger shadow-sm">
                         <div class="card-body text-center">
@@ -102,19 +102,16 @@ else
                 }
             </div>
         </div>
-
     }
-
 }
 
 @code {
-    private List<OnyraProjet.Models.Donnee> donnee;
-
+    private List<OnyraProjet.Models.Donnee> donnee = new List<Donnee>();
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await authProvider.GetAuthenticationStateAsync();
-        var userIdClaim = authState.User.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
+        var authState = await authProvider.GetAuthenticationStateAsync(); /* aller chercher si l'utilisateur est connecter */
+        var userIdClaim = authState.User.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier); /* DEF DE CETTE LIGNE : Trouve moi le claim qui contient l’ID de l'utilisateur. */
         int noUtilisateur = int.Parse(userIdClaim.Value);
 
         // Récupérer uniquement les données de cet utilisateur

@@ -17,11 +17,9 @@ namespace OnyraProjet.Services
         {
             using var context = await _factory.CreateDbContextAsync();
             return await context.Donnees
-                .Where(d => d.NoUtilisateur == noUtilisateur)
-                .OrderByDescending(d => d.DateHeure)
+                .Where(donneesCapteurs => donneesCapteurs.NoUtilisateur == noUtilisateur)
+                .OrderByDescending(donneesCapteurs => donneesCapteurs.DateHeure)
                 .ToListAsync();
         }
-
-
     }
 }
