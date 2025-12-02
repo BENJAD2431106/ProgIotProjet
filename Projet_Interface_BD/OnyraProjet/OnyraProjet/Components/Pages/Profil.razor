@@ -1,4 +1,112 @@
 ﻿@page "/profil"
+@* @using Microsoft.AspNetCore.Components.Authorization
+@using OnyraProjet.Authentication
+@using System.Security.Claims
+@inject OnyraProjet.Services.ProfilService ProfilService
+@inject AuthenticationStateProvider AuthService
+@using Microsoft.AspNetCore.Components.Forms
+@using OnyraProjet.Models
 
+<h3 class="text-center mb-4">Mon Profil</h3>
+
+@if (profil == null)
+{
+    <p>Chargement...</p>
+}
+else
+{
+    <EditForm Model="profil" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group mb-3">
+            <label>Nom</label>
+            <InputText class="form-control" @bind-Value="profil.NomUtilisateur" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Prénom</label>
+            <InputText class="form-control" @bind-Value="profil.PrenomUtilisateur" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Courriel</label>
+            <InputText class="form-control" @bind-Value="profil.Courriel" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Âge</label>
+            <InputNumber class="form-control" @bind-Value="profil.Age" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>RAMQ</label>
+            <InputText class="form-control" @bind-Value="profil.RamQ" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Photo de profil</label><br />
+            @if (profil.Photo != null)
+            {
+                <img src="@ConvertToBase64(profil.Photo)" alt="Photo Profil" style="width:150px;height:150px;border-radius:50%;" />
+            }
+            <InputFile OnChange="HandlePhotoUpload" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+
+        @if (successMessage != null)
+        {
+            <div class="alert alert-success mt-2">@successMessage</div>
+        }
+    </EditForm>
+}
+
+@code {
+    private ProfilModel? profil;
+    private string? successMessage;
+    private int userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthService.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            userId = int.Parse(user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "0");
+            profil = await ProfilService.GetProfilAsync(userId);
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (profil != null)
+        {
+            bool result = await ProfilService.UpdateProfilAsync(userId, profil);
+            if (result)
+            {
+                successMessage = "Profil mis à jour avec succès !";
+            }
+        }
+    }
+
+    private async Task HandlePhotoUpload(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            var buffer = new byte[file.Size];
+            await file.OpenReadStream().ReadAsync(buffer);
+            if (profil != null)
+                profil.Photo = buffer;
+        }
+    }
+
+    private string ConvertToBase64(byte[] imageData)
+    {
+        return $"data:image/png;base64,{Convert.ToBase64String(imageData)}";
+    }
+} *@
 
 
