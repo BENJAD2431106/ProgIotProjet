@@ -30,19 +30,40 @@ namespace OnyraProjet.Services
             }
 
         }
-        public async Task<string> SavoirSiRempli(DateTime date, int idUtilisateur)
+        public async Task<List<DateOnly>> SavoirSiRempli(int idUtilisateur)
         {
-            using var db = await myCalendarFactory.CreateDbContextAsync();
+            var db = await myCalendarFactory.CreateDbContextAsync();
+            var joursRemplis = new List<DateOnly>();
+            joursRemplis = await db.Calendriers
+                    .Where(c => c.NoUtilisateur == idUtilisateur)
+                    .Select(c => c.Dates) 
+                    .Distinct()
+                    .ToListAsync();
+            return joursRemplis;
+        }
+        public async Task ModifierCalendrier(Calendrier cal)
+        {
+            var db = await myCalendarFactory.CreateDbContextAsync();
+            db.Calendriers.Update(cal);
+            await db.SaveChangesAsync();
+        }
+        public async Task<bool> ModifierCalendrier(int idUtilisateur, DateOnly jour, string note, TimeOnly? heureCoucher, TimeOnly? heureLever, DateOnly dateCoucher,DateOnly dateLever)
+        {
+            var db = await myCalendarFactory.CreateDbContextAsync();
 
-            bool existe = await db.Calendriers
-                .AnyAsync(c =>
-                    c.NoUtilisateur == idUtilisateur &&
-                    c.Dates == DateOnly.FromDateTime(date));
+            var existant = await db.Calendriers
+                .FirstOrDefaultAsync(c => c.NoUtilisateur == idUtilisateur
+                                       && c.Dates == jour);
 
-            if (existe)
-                return "background-color: lightgreen;";
+            if (existant == null)
+                return false; // pas trouvé
 
-            return "";
+            existant.Commentaire = note;
+            existant.HeureCoucher = dateCoucher.ToDateTime(heureCoucher.Value);
+            existant.HeureLever = dateLever.ToDateTime(heureLever.Value);
+
+            await db.SaveChangesAsync();
+            return true;
         }
 
 
