@@ -42,6 +42,7 @@ namespace OnyraProjet
             //mine
             builder.Services.AddScoped<InscriptionService>();
             builder.Services.AddScoped<CalendrierService>();
+            builder.Services.AddScoped<Medecin>();
             builder.Services.AddScoped<VisualisateurCalendrierService>(); 
 
 

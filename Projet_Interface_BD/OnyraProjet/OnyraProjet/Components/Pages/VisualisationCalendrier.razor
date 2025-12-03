@@ -113,7 +113,7 @@
             var idUtil = authState.User.FindFirst(c => c.Type.Contains("nameidentifier"));
             return int.Parse(idUtil.Value);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             return 46;
         }
@@ -169,7 +169,7 @@
         {
             var authState = await authenticationState;
             var idUtil = authState.User.FindFirst(c => c.Type.Contains("nameidentifier"));
-            var noUtil= int.Parse(idUtil.Value);
+            var noUtil = int.Parse(idUtil.Value);
 
         }
         catch (Exception e)
@@ -190,6 +190,6 @@
         {
             Console.WriteLine(e);
         }
-}
+    }
 
 }

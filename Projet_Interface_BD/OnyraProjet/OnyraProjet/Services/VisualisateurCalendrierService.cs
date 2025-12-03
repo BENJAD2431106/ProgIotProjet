@@ -22,7 +22,7 @@ namespace OnyraProjet.Services
             {
                 return await dbContext.Calendriers
                     .Where(c => c.NoUtilisateur == noUtilisateur 
-                    && c.HeureCoucher.Date == date.Date)
+                    && c.HeureLever.Date == date.Date)
                     .FirstOrDefaultAsync();
             }
             catch (Exception e)
