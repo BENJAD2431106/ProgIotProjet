@@ -1,50 +1,62 @@
-﻿//using Microsoft.EntityFrameworkCore;
-//using OnyraProjet.Data;
-//using OnyraProjet.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using OnyraProjet.Data;
+using OnyraProjet.Models;
 
-//namespace OnyraProjet.Services
-//{
-//    public class ProfilService
-//    {
-//        private readonly Prog3a25ProductionAllysonJadContext _context;
+namespace OnyraProjet.Services
+{
+    public class ProfilService
+    {
+        private readonly IDbContextFactory<Prog3a25ProductionAllysonJadContext> _contextFactory;
 
-//        public ProfilService(Prog3a25ProductionAllysonJadContext context)
-//        {
-//            _context = context;
-//        }
+        public ProfilService(IDbContextFactory<Prog3a25ProductionAllysonJadContext> contextFactory)
+        {
+            _contextFactory = contextFactory;
+        }
 
-//        public async Task<ProfilModel?> GetProfilAsync(int noUtilisateur)
-//        {
-//            var user = await _context.Utilisateurs.FindAsync(noUtilisateur);
-//            if (user == null) return null;
+        public async Task<ProfilModel?> GetProfilAsync(int noUtilisateur)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
 
-//            return new ProfilModel
-//            {
-//                NomUtilisateur = user.NomUtilisateur,
-//                PrenomUtilisateur = user.PrenomUtilisateur,
-//                Courriel = user.Courriel,
-//                Age = user.Age,
-//                RamQ = user.RamQ,
-//                Photo = user.Photo
-//            };
-//        }
+            var user = await context.Utilisateurs
+                                    .FirstOrDefaultAsync(u => u.NoUtilisateur == noUtilisateur);
 
-//        public async Task<bool> UpdateProfilAsync(int noUtilisateur, ProfilModel model)
-//        {
-//            var user = await _context.Utilisateurs.FindAsync(noUtilisateur);
-//            if (user == null) return false;
+            if (user == null)
+                return null;
 
-//            user.NomUtilisateur = model.NomUtilisateur;
-//            user.PrenomUtilisateur = model.PrenomUtilisateur;
-//            user.Courriel = model.Courriel;
-//            user.Age = model.Age;
-//            user.RamQ = model.RamQ;
-//            if (model.Photo != null)
-//                user.Photo = model.Photo;
+            return new ProfilModel
+            {
+                NomUtilisateur = user.NomUtilisateur,
+                PrenomUtilisateur = user.PrenomUtilisateur,
+                Courriel = user.Courriel,
+                Age = user.Age,
+                RamQ = user.RamQ,
+                Photo = user.Photo
+            };
+        }
 
-//            await _context.SaveChangesAsync();
-//            return true;
-//        }
-//    }
-//}
+        public async Task<bool> UpdateProfilAsync(int noUtilisateur, ProfilModel model)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
 
+            var user = await context.Utilisateurs
+                                    .FirstOrDefaultAsync(u => u.NoUtilisateur == noUtilisateur);
+
+            if (user == null)
+                return false;
+
+            user.NomUtilisateur = model.NomUtilisateur;
+            user.PrenomUtilisateur = model.PrenomUtilisateur;
+            user.Courriel = model.Courriel;
+            user.Age = model.Age;
+            user.RamQ = model.RamQ;
+
+            if (model.Photo != null && model.Photo.Length > 0)
+            {
+                user.Photo = model.Photo;
+            }
+
+            await context.SaveChangesAsync();
+            return true;
+        }
+    }
+}

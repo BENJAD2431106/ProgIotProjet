@@ -16,7 +16,7 @@ public partial class Prog3a25ProductionAllysonJadContext : DbContext
     {
     }
 
-    public virtual DbSet<Calendrier> Calendriers { get; set; }
+    public virtual DbSet<Calendrier> Calendriers { get; set; } 
 
     public virtual DbSet<CalendrierUtilisateur> CalendrierUtilisateurs { get; set; }
 
