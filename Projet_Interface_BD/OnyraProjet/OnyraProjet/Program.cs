@@ -30,6 +30,7 @@ namespace OnyraProjet
 
             //builder.Services.AddServerSideBlazor();
             builder.Services.AddScoped<ConnexionService>();
+            builder.Services.AddScoped<MotDePasseService>();
             builder.Services.AddScoped<ProfilService>();
             builder.Services.AddScoped<DonneeService>();
             builder.Services.AddScoped<WeatherService>();

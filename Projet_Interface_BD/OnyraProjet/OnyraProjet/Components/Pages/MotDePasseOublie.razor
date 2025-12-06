@@ -1,0 +1,130 @@
+﻿@page "/mot-de-passe-oublie"
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using OnyraProjet.Models
+@using OnyraProjet.Services
+@using System.Security.Claims
+
+@inject MotDePasseService MotDePasseService
+@inject AuthenticationStateProvider AuthService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+<PageTitle>Changer le mot de passe</PageTitle>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <div>Chargement…</div>
+    </div>
+}
+else if (errorMessage != null)
+{
+    <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="alert alert-danger">@errorMessage</div>
+    </div>
+}
+else
+{
+    <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="card shadow p-4" style="width: 380px;">
+
+            <EditForm Model="model" OnValidSubmit="HandleSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <h3 class="text-center mb-4"><strong>Changer le mot de passe</strong></h3>
+
+                <div class="mb-3">
+                    <label class="form-label">Mot de passe actuel</label>
+                    <InputText class="form-control" type="password"
+                               @bind-Value="model.MotDePasseActuel" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Nouveau mot de passe</label>
+                    <InputText class="form-control" type="password"
+                               @bind-Value="model.NouveauMotDePasse" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Confirmation</label>
+                    <InputText class="form-control" type="password"
+                               @bind-Value="model.ConfirmationMotDePasse" />
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mb-3">
+                    Enregistrer
+                </button>
+
+                <button type="button" class="btn btn-secondary w-100"
+                        @onclick="RetourProfil">
+                    Retour au profil
+                </button>
+            </EditForm>
+
+        </div>
+    </div>
+}
+
+@code {
+    private ChangerMotDePasseModel model = new();
+    private string? courriel;
+    private int userId;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthService.GetAuthenticationStateAsync();
+        var user = auth.User;
+
+        // 1️⃣ Récupérer l'utilisateur via NameIdentifier (comme dans Profil)
+        var idClaim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+        if (idClaim == null || !int.TryParse(idClaim, out userId))
+        {
+            errorMessage = "Impossible d'identifier l'utilisateur.";
+            isLoading = false;
+            return;
+        }
+
+        // 2️⃣ Récupérer le courriel depuis la BD
+        courriel = await MotDePasseService.GetCourrielAsync(userId);
+
+        if (courriel == null)
+        {
+            errorMessage = "Impossible de récupérer le courriel.";
+        }
+
+        isLoading = false;
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (courriel == null)
+        {
+            await JS.InvokeVoidAsync("alert", "Erreur : courriel non trouvé.");
+            return;
+        }
+
+        var ok = await MotDePasseService.ChangerMotDePasseAsync(
+            courriel,
+            model.MotDePasseActuel,
+            model.NouveauMotDePasse);
+
+        if (ok)
+        {
+            await JS.InvokeVoidAsync("alert", "Mot de passe modifié !");
+            NavigationManager.NavigateTo("/profil", true);
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Mot de passe actuel incorrect.");
+        }
+    }
+
+    private void RetourProfil() =>
+        NavigationManager.NavigateTo("/profil");
+}
