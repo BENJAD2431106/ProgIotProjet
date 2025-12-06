@@ -1,0 +1,95 @@
+﻿@using System.Globalization
+
+<div class="p-3 border rounded shadow-sm">
+    <h4 class="mb-3">
+        Visualisateur de Données pour Le
+        @SelectedDate.ToString("dd MMMM yyyy", CultureInfo.GetCultureInfo("fr-FR"))
+    </h4>
+</div>
+
+@if (CalendrierJour is not null)
+{
+    {
+        dureeSommeil = CalendrierJour.HeureLever - CalendrierJour.HeureCoucher;
+        dureeFormat = $"{(int)dureeSommeil.TotalHours}h {dureeSommeil.Minutes}min";
+
+    }
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <div style="display:flex; gap:40px; align-items:flex-start; margin-top:10px;">
+                <div style="flex:1;">
+                    <p><strong>Date :</strong> @CalendrierJour.Dates.ToShortDateString()</p>
+                    <p><strong>Heure de coucher :</strong> @CalendrierJour.HeureCoucher.ToShortTimeString()</p>
+                    <p><strong>Heure de lever :</strong> @CalendrierJour.HeureLever.ToShortTimeString()</p>
+                </div>
+                <div style="flex:1;">
+                    <p><strong>Ressenti :</strong> @CalendrierJour.Ressenti</p>
+                    <p><strong>Commentaire : </strong>@CalendrierJour.Commentaire</p>
+                    <p><strong>Sommeil Total : </strong>@dureeFormat</p>
+                </div>
+            </div>
+
+            @if (MedecinSelectionne is not null)
+            {
+                <div class="mb-3 p-3" style="border-radius:10px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); background: linear-gradient(180deg,#fff,#f8f9fb);">
+                    <h5 class="mb-1">Médecin enregistré</h5>
+                    <div class="d-flex align-items-center">
+                        <div style="width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; background:#e9eef8; margin-right:12px;">
+                            @((MedecinSelectionne.PrenomUtilisateur ?? "").FirstOrDefault().ToString().ToUpper())@((MedecinSelectionne.NomUtilisateur ?? "").FirstOrDefault().ToString().ToUpper())
+                        </div>
+                        <div>
+                            <div><strong>@MedecinSelectionne.PrenomUtilisateur @MedecinSelectionne.NomUtilisateur</strong></div>
+                            <div style="font-size:0.9rem; color:#555;">
+                                <small>Contact : @MedecinSelectionne.Courriel</small>
+                            </div>
+                        </div>
+                        <div class="ms-auto">
+                            <button class="btn btn-outline-secondary btn-sm" @onclick="() => OnDeselectDoctor.InvokeAsync()">
+                                Retirer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @* Bouton de modification *@
+            @if (!AfficherFormulaireModification)
+            {
+                <button class="btn btn-warning btn-sm mt-3" @onclick="() => OnModify.InvokeAsync()">
+                    Modifier mes données pour cette nuit
+                </button>
+            }
+
+
+            @if (dureeSommeil.TotalHours <= 5 && MedecinSelectionne is null)
+            {
+                <div class="alert alert-warning mt-3">
+                    <p><strong> Duree de sommeil insatisfaisante. </strong></p>
+                    <p><strong>Onyra vous conseille fortement de prendre rendez-vous avec un médecin. </strong> </p>
+                    <button class="btn btn-danger mt-2" @onclick="() => OnLoadDoctors.InvokeAsync()">
+                        Prendre rendez-vous maintenant
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <p>Chargement des données...</p>
+}
+
+@code {
+    [Parameter] public DateTime SelectedDate { get; set; }
+    [Parameter] public OnyraProjet.Models.Calendrier? CalendrierJour { get; set; }
+    [Parameter] public OnyraProjet.Models.Utilisateur? MedecinSelectionne { get; set; }
+    [Parameter] public bool AfficherFormulaireModification { get; set; }
+
+    // Événements pour remonter les actions
+    [Parameter] public EventCallback OnModify { get; set; }
+    [Parameter] public EventCallback OnDeselectDoctor { get; set; }
+    [Parameter] public EventCallback OnLoadDoctors { get; set; }
+    TimeSpan dureeSommeil;
+    string dureeFormat;
+}

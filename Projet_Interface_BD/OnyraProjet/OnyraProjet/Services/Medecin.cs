@@ -46,5 +46,57 @@ namespace OnyraProjet.Services
                 await db.SaveChangesAsync();
             }
         }
+        public async Task<DateOnly?> ChargerRendezVous(int idUtilisateur)
+        {
+            var db = await myFactory.CreateDbContextAsync();
+
+            var utilisateur = await db.Utilisateurs
+                .FirstOrDefaultAsync(u => u.NoUtilisateur == idUtilisateur);
+
+            if (utilisateur == null)
+                return null;
+
+            return utilisateur.DateRdv;
+        }
+        public async Task<(DateOnly? dateRdv, Utilisateur? medecin)> ChargerDossierMedecin(int idUtilisateur)
+        {
+            var db = await myFactory.CreateDbContextAsync();
+
+            var utilisateur = await db.Utilisateurs
+                .FirstOrDefaultAsync(u => u.NoUtilisateur == idUtilisateur);
+
+            if (utilisateur == null)
+                return (null, null);
+
+            Utilisateur? medecin = null;
+
+            if (utilisateur.MedecinAttitre != null)
+            {
+                medecin = await db.Utilisateurs
+                    .FirstOrDefaultAsync(u => u.NoUtilisateur == utilisateur.MedecinAttitre);
+            }
+
+            return (utilisateur.DateRdv, medecin);
+        }
+
+        public async Task RetirerMedecin(int idUtilisateur)
+        {
+            var db = await myFactory.CreateDbContextAsync();
+
+            var utilisateur = await db.Utilisateurs
+                .FirstOrDefaultAsync(u => u.NoUtilisateur == idUtilisateur);
+
+            if (utilisateur != null)
+            {
+                utilisateur.MedecinAttitre = null; 
+                utilisateur.DateRdv = null; 
+
+                await db.SaveChangesAsync();
+            }
+        }
+
+
+
+
     }
 }
