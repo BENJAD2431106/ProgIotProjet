@@ -1,10 +1,10 @@
 ﻿@page "/Calendrier"
+@using System.Globalization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
-@using System.Globalization
+@using System.Security.Claims
 @using Authentication
 @using OnyraProjet.Models
-@using System.Security.Claims
 @inject OnyraProjet.Services.CalendrierService calendrierService
 @inject OnyraProjet.Services.VisualisateurCalendrierService visCalService
 @inject OnyraProjet.Services.Medecin medecinService
@@ -15,246 +15,85 @@
 <h3 class="mb-3 text-center">Calendrier</h3>
 
 <div class="row">
-    <div class="col-6">
-
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <button class="btn btn-outline-primary btn-sm" @onclick="PrevMonth">◀️</button>
-            <strong>@currentMonth.ToString("MMMM yyyy", CultureInfo.GetCultureInfo("fr-FR"))</strong>
-            <button class="btn btn-outline-primary btn-sm" @onclick="NextMonth">▶️</button>
-        </div>
-
-        @if (days == null)
-        {
-
-        }
-        else
-        {
-            <table class="table table-bordered text-center">
-                <thead class="table-light">
-                    <tr>
-                        @foreach (var dayName in dayNames)
-                        {
-                            <th>@dayName</th>
-                        }
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @for (int week = 0; week < 6; week++)
-                    {
-                        <tr>
-                            @for (int day = 0; day < 7; day++)
-                            {
-                                var index = week * 7 + day;
-                                var date = days[index];
-                                var isCurrentMonth = date.Month == currentMonth.Month;
-                                var isSelected = date == selectedDate;
-
-                                string baseStyle = GetCellStyle(isCurrentMonth, isSelected);
-                                @if (joursRemplis.Contains(DateOnly.FromDateTime(date)))
-                                {
-                                    <td style="@($"{baseStyle} background-color:grey; color:white; font-weight:bold;")"
-                                        class="p-3"
-                                        @onclick="() => SelectDay(date)">
-                                        @date.Day
-                                    </td>
-                                }
-                                else
-                                {
-                                    <td style="@($"{baseStyle}")"
-                                        class="p-3"
-                                        @onclick="() => SelectDay(date)">
-                                        @date.Day
-                                    </td>
-                                }
-                            }
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
+    <div class="col-lg-6">
+        <CalendarComponent CurrentMonth="@currentMonth"
+                           Days="@days"
+                           DayNames="@dayNames"
+                           SelectedDate="@selectedDate"
+                           JoursRemplis="@joursRemplis"
+                           OnPrevMonth="PrevMonth"
+                           OnNextMonth="NextMonth"
+                           OnDaySelected="SelectDay" />
     </div>
-    @if (joursRemplis.Contains(DateOnly.FromDateTime(selectedDate)))
-    {
-        <div class="col-6">
 
-            @if (selectedDate != DateTime.MinValue)
+    <div class="col-lg-6">
+        @if (selectedDate != DateTime.MinValue)
+        {
+            @if (joursRemplis.Contains(DateOnly.FromDateTime(selectedDate)))
             {
-                <div class="p-3 border rounded shadow-sm">
-                    <h4 class="mb-3">
-                        Visualisateur de Données pour Le
-                        @selectedDate.ToString("dd MMMM yyyy", CultureInfo.GetCultureInfo("fr-FR"))
-                    </h4>
+                <DayDataDisplay CalendrierJour="@calendrierJour"
+                                SelectedDate="@selectedDate"
+                                MedecinSelectionne="@medecinSelectionne"
+                                OnModify="ModifierNuit"
+                                OnDeselectDoctor="DeselectionnerMedecin"
+                                OnLoadDoctors="ChargerMedecins"
+                                AfficherFormulaireModification="@afficherFormulaireModification" />
 
-                </div>
-            }
-            @if (calendrierJour is not null)
-            {
-                TimeSpan dureeSommeil = calendrierJour.HeureLever - calendrierJour.HeureCoucher;
-                string dureeFormat = $"{(int)dureeSommeil.TotalHours}h {dureeSommeil.Minutes}min";
+                @if (afficherFormulaireModification && calendrierJour is not null)
+                {
+                    <div class="card mt-3 p-3 bg-light">
+                        <h5>Modifier la nuit du @selectedDate.ToShortDateString()</h5>
 
-                <div class="card">
-                    <div class="card-body">
-                        <p><strong>Date :</strong> @calendrierJour.Dates.ToShortDateString()</p>
-                        <p><strong>Heure de coucher :</strong> @calendrierJour.HeureCoucher.ToShortTimeString()</p>
-                        <p><strong>Heure de lever :</strong> @calendrierJour.HeureLever.ToShortTimeString()</p>
-                        <p><strong>Ressenti :</strong> @calendrierJour.Ressenti</p>
-                        <p><strong>Commentaire : </strong> @calendrierJour.Commentaire</p>
-                        <p><strong>Sommeil Total : </strong> @dureeFormat</p>
-                        <button class="btn btn-warning btn-sm"
-                                @onclick="ModifierNuit">
-                            Modifier mes données pour cette nuit
+                        <label>Note</label>
+                        <input class="form-control" @bind="noteModifiee" />
+
+                        <label>Date De Coucher</label>
+                        <input type="date" class="form-control" @bind="dateCoucherModifiee" />
+
+                        <label>Heure de coucher</label>
+                        <input type="time" class="form-control" @bind="heureCoucherModifiee" />
+
+                        <label>Date De Lever</label>
+                        <input type="date" class="form-control" @bind="dateLeverModifiee" />
+
+                        <label>Heure de lever</label>
+                        <input type="time" class="form-control" @bind="heureLeverModifiee" />
+
+                        <button class="btn btn-success mt-2" @onclick="EnregistrerModifications">
+                            Enregistrer modifications
                         </button>
-                        @if (afficherFormulaireModification == true)
-                        {
-                                    <div class="card mt-3 p-3">
-
-                                        <h5>Modifier la nuit du @selectedDate.ToShortDateString()</h5>
-
-                                        <label>Note</label>
-                                        <input class="form-control" @bind="noteModifiee" />
-
-                                        <label>Date De Coucher</label>
-                                        <input type="date" class="form-control"
-                                               @bind="dateCoucherModifiee" />
-
-                                        <label>Heure de coucher</label>
-                                        <input type="time" class="form-control"
-                                               @bind="heureCoucherModifiee" />
-
-                                        <label>Date De Lever</label>
-                                        <input type="date" class="form-control"
-                                               @bind="dateLeverModifiee" />
-
-                                        <label>Heure de lever</label>
-                                        <input type="time" class="form-control"
-                                               @bind="heureLeverModifiee" />
-
-                                        <button class="btn btn-success mt-2" @onclick="EnregistrerModifications">
-                                            Enregistrer modifications
-                                        </button>
-
-                                    </div>
-                                }
-
-                            </div>
-                        
-                        @if (dureeSommeil.TotalHours <= 5)
-                        {
-                            <p><strong> Duree de sommeil insatisfaisante. </strong></p>
-                            <p><strong>Onyra vous conseille fortement de prendre rendez - vous avec un médecin. </strong> </p>
-                            <p><strong> Nous vous suggérons de : </strong> </p>
-
-                            <button class="btn btn-danger mt-2"
-                                    @onclick="ChargerMedecins">
-                                Prendre rendez-vous maintenant
-                            </button>
-                        }
-                        @if (afficherMedecins)
-                        {
-                            <div class="card mt-3">
-                                <div class="card-body">
-                                    <h5>Médecins disponibles</h5>
-
-                                    @if (listeMedecins.Count == 0)
-                                    {
-                                        <p>Aucun médecin disponible.</p>
-                                    }
-                                    else
-                                    {
-                                        <ul class="list-group">
-                                            <div class="mt-3">
-                                                <label>Date du rendez-vous :</label>
-                                                <input type="date" @bind="dateRdv" class="form-control" />
-                                            </div>
-                                            @foreach (var med in listeMedecins)
-                                            {
-                                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                    <div>
-                                                        <strong>@med.NomUtilisateur @med.PrenomUtilisateur </strong><br />
-                                                        <small> Disponible.</small>
-                                                    </div>
-
-                                                    <button class="btn btn-primary btn-sm"
-                                                            @onclick="() => ChoisirMedecin(med.NoUtilisateur)">
-                                                        Choisir
-                                                    </button>
-                                                    <p>@messageMed</p>
-                                                </li>
-                                            }
-                                        </ul>
-                                    }
-                                </div>
-                            </div>
-                        }
-
+                        <button class="btn btn-secondary mt-2" @onclick="() => afficherFormulaireModification = false">
+                            Annuler
+                        </button>
                     </div>
+                }
             }
             else
             {
-                <p>Aucune donnée pour cette date.</p>
+                <DataAdditionForm SelectedDate="@selectedDate"
+                                  NouveauCalendrier="@nouveauCalendrier"
+                                  DateCoucher="@dateCoucher"
+                                  DateLever="@dateLever"
+                                  HeureCoucher="@heureCoucher"
+                                  HeureLever="@heureLever"
+                                  Message="@message"
+                                  OnValidSubmit="HandleError"
+                                  OnCancel="AnnulerFormulaire"
+                                  OnDateCoucherChanged="((val) => dateCoucher = val)"
+                                  OnHeureCoucherChanged="((val) => heureCoucher = val)"
+                                  OnHeureLeverChanged="((val) => heureLever = val)"/>
             }
 
-        </div>
-    }
-    else
-    {
-        <div class="col-6">
-
-            @if (selectedDate != DateTime.MinValue)
+            @if (afficherMedecins && joursRemplis.Contains(DateOnly.FromDateTime(selectedDate)))
             {
-                <div class="p-3 border rounded shadow-sm">
-                    <h4 class="mb-3">
-                        Ajouter des données pour le
-                        @selectedDate.ToString("dd MMMM yyyy", CultureInfo.GetCultureInfo("fr-FR"))
-                    </h4>
-
-                    <EditForm Model="nouveauCalendrier" OnValidSubmit="HandleError">
-
-                        <div class="form-group mb-2">
-                            <label for="ressenti">Votre Ressenti :</label>
-                            <InputNumber class="form-control" id="ressenti"
-                                         @bind-Value=nouveauCalendrier.Ressenti></InputNumber>
-                        </div>
-
-                        <div class="form-group mb-2">
-                            <label>Date du Coucher</label>
-                            <InputDate class="form-control" @bind-Value=dateCoucher></InputDate>
-
-                            <label class="mt-1">Heure du Coucher</label>
-                            <input type="time" class="form-control" @bind=heureCoucher />
-                        </div>
-
-                        <div class="form-group mb-2">
-                            <label>Date du Réveil</label>
-                            <InputDate class="form-control" @bind-Value="@dateLever" readonly></InputDate>
-
-                            <label class="mt-1">Heure du Réveil</label>
-                            <input type="time" class="form-control" @bind=heureLever />
-                        </div>
-
-                        <div class="form-group mb-2">
-                            <label for="nbReveil">Nombre de réveils</label>
-                            <InputNumber class="form-control" id="nbReveil"
-                                         @bind-Value=nouveauCalendrier.NbreReveil></InputNumber>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="commentaire">Commentaires :</label>
-                            <InputTextArea class="form-control" id="commentaire"
-                                           @bind-Value=nouveauCalendrier.Commentaire></InputTextArea>
-                        </div>
-                        <p class="text-danger text-center">@message</p>
-                        <button class="btn btn-success me-2">Enregistrer</button>
-                        <button class="btn btn-secondary" @onclick="GenerateCalendar">Annuler</button>
-
-                    </EditForm>
-                </div>
+                <DoctorAppointmentSection ListeMedecins="@listeMedecins"
+                                          DateRdv="@dateRdv"
+                                          MessageMed="@messageMed"
+                                          OnDateRdvChanged="((val) => dateRdv = val)"
+                                          OnSelectDoctor="ChoisirMedecin" />
             }
-        </div>
-
-    }
-
+        }
+    </div>
 </div>
 
 @code {
@@ -288,6 +127,7 @@
     private Utilisateur? medecinSelectionne = null;
 
     string? noteModifiee;
+
     TimeOnly heureCoucherModifiee;
     TimeOnly heureLeverModifiee;
     private DateOnly dateLeverModifiee = DateOnly.FromDateTime(DateTime.Now);
@@ -295,6 +135,7 @@
     DateTime dateSelectionnee; // la date que l’utilisateur modifie
 
     string msgModif = "";
+
     protected override async Task OnInitializedAsync()
     {
         GenerateCalendar();
@@ -303,13 +144,12 @@
         var authState = await authenticationState;
         var user = authState.User;
 
-        if (!user.Identity.IsAuthenticated)
+        if (!user.Identity?.IsAuthenticated ?? true)
         {
             message = "Vous devez être connecté.";
             return;
         }
 
-        // Recherche robuste
         var idClaim =
             user.FindFirst(ClaimTypes.NameIdentifier) ??
             user.FindFirst(c => c.Type.Contains("nameidentifier")) ??
@@ -321,12 +161,31 @@
             return;
         }
 
-        idUtilisateur = int.Parse(idClaim.Value);
+        if (!int.TryParse(idClaim.Value, out idUtilisateur))
+        {
+            message = "Identifiant utilisateur invalide.";
+            return;
+        }
 
         joursRemplis = await calendrierService.SavoirSiRempli(idUtilisateur);
+
+        var (dateRdvEnregistree, medecinAttribue) =
+        await medecinService.ChargerDossierMedecin(idUtilisateur);
+
+        if (dateRdvEnregistree is not null)
+            dateRdv = dateRdvEnregistree;
+
+        if (medecinAttribue is not null)
+        {
+            medecinSelectionne = medecinAttribue;
+            // On peut ne pas afficher la liste des médecins s'il y en a déjà un
+            // afficherMedecins = true; 
+            // listeMedecins = new List<Utilisateur> { medecinSelectionne };
+        }
     }
 
 
+    // --- Méthodes de gestion du calendrier (appelées par CalendarComponent) ---
     private void GenerateCalendar()
     {
         days.Clear();
@@ -354,134 +213,150 @@
 
     private async Task SelectDay(DateTime date)
     {
-
         selectedDate = date;
+        afficherFormulaireModification = false; // Fermer la modification lors du changement de jour
+        afficherMedecins = false; // Cacher la liste des médecins lors du changement de jour
+
         if (joursRemplis.Contains(DateOnly.FromDateTime(date)))
         {
             await ChargerDonnees(selectedDate);
         }
         else
         {
+            // Prépare le formulaire d'ajout
             dateLever = DateOnly.FromDateTime(selectedDate);
-            dateCoucher = DateOnly.FromDateTime(selectedDate);
+            dateCoucher = DateOnly.FromDateTime(selectedDate.AddDays(-1)); // Hypothèse: coucher la veille
             DateOnly dateDB = DateOnly.FromDateTime(selectedDate);
-            nouveauCalendrier.Dates = dateDB;
+            nouveauCalendrier = new Models.Calendrier { Dates = dateDB, NoUtilisateur = idUtilisateur };
+            heureCoucher = DateTime.Today.AddHours(22); // Heure par défaut
+            heureLever = DateTime.Today.AddHours(6);    // Heure par défaut
         }
-
     }
 
-    private void SaveNote()
-    {
-
-    }
-
-    private string GetCellStyle(bool isCurrentMonth, bool isSelected)
-    {
-        string baseStyle = "padding:6px; text-align:center; border:1px solid #ccc; cursor:pointer;";
-        if (!isCurrentMonth)
-            baseStyle += "color:gray;";
-        if (isSelected)
-            baseStyle += "background-color:lightblue; font-weight:bold;";
-        return baseStyle;
-    }
-    public async Task AjouterCalendrier()
-    {
-        Console.WriteLine($"Note pour {selectedDate.ToShortDateString()} : {note}");
-        note = "";
-        selectedDate = DateTime.MinValue;
-        try
-        {
-            var authState = await authenticationState;
-            var idUtil = authState.User.FindFirst(c => c.Type.Contains("nameidentifier"));
-            nouveauCalendrier.NoUtilisateur = int.Parse(idUtil.Value);
-            nouveauCalendrier.HeureCoucher = CoucherComplet;
-            nouveauCalendrier.HeureLever = LeverComplet;
-            await calendrierService.AjouterCalendrier(nouveauCalendrier);
-
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-        }
-        nouveauCalendrier = new Models.Calendrier();
-        nav.NavigateTo("/Calendrier", forceLoad: true);
-    }
+    // --- Méthodes de gestion des données (services) ---
     public async Task HandleError()
     {
         message = string.Empty;
-        if (!string.IsNullOrEmpty(nouveauCalendrier.Ressenti.ToString()) && nouveauCalendrier.Ressenti > 10 || nouveauCalendrier.Ressenti < 1)
+        if (!string.IsNullOrEmpty(nouveauCalendrier.Ressenti.ToString()) && (nouveauCalendrier.Ressenti > 10 || nouveauCalendrier.Ressenti < 1))
         {
-            message = "Ressenti invalide.";
+            message = "Ressenti invalide (doit être entre 1 et 10).";
             return;
         }
+
         var aujourdHui = DateOnly.FromDateTime(selectedDate);
         var hier = aujourdHui.AddDays(-1);
 
         if (dateCoucher != aujourdHui && dateCoucher != hier)
         {
-            message = "La date de coucher doit être aujourd'hui ou hier.";
+            message = "La date de coucher doit être le jour du lever ou la veille.";
             return;
         }
 
         await AjouterCalendrier();
     }
+
+    public async Task AjouterCalendrier()
+    {
+        try
+        {
+            nouveauCalendrier.HeureCoucher = CoucherComplet;
+            nouveauCalendrier.HeureLever = LeverComplet;
+            await calendrierService.AjouterCalendrier(nouveauCalendrier);
+
+            // Mise à jour de l'état après l'ajout
+            joursRemplis = await calendrierService.SavoirSiRempli(idUtilisateur);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+
+        // Rediriger/Recharger la page pour rafraîchir le calendrier
+        nav.NavigateTo("/Calendrier", forceLoad: true);
+    }
+
+    private void AnnulerFormulaire()
+    {
+        selectedDate = DateTime.MinValue;
+        nouveauCalendrier = new Models.Calendrier();
+        message = "";
+        GenerateCalendar();
+    }
+
     public async Task ChargerDonnees(DateTime date)
     {
-
         try
         {
             calendrierJour = await visCalService.VisualiserDate(date, idUtilisateur);
 
+            // Initialiser les champs de modification ici
+            if (calendrierJour != null)
+            {
+                noteModifiee = calendrierJour.Commentaire;
+                dateCoucherModifiee = DateOnly.FromDateTime(calendrierJour.HeureCoucher);
+                heureCoucherModifiee = TimeOnly.FromDateTime(calendrierJour.HeureCoucher);
+                dateLeverModifiee = DateOnly.FromDateTime(calendrierJour.HeureLever);
+                heureLeverModifiee = TimeOnly.FromDateTime(calendrierJour.HeureLever);
+            }
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
         }
     }
+
+    // --- Méthodes de gestion du médecin (appelées par DayDataDisplay / DoctorAppointmentSection) ---
     private async Task ChargerMedecins()
     {
         afficherMedecins = true;
         listeMedecins = await medecinService.GetMedecinsDisponibles();
     }
+
     private async Task ChoisirMedecin(int idMedecin)
     {
+        messageMed = string.Empty;
         if (dateRdv is null)
         {
             messageMed = "Veuillez sélectionner une date avant de choisir un médecin.";
             return;
         }
+        if (dateRdv <= DateOnly.FromDateTime(DateTime.Now))
+        {
+            messageMed = "Date dépassée.";
+            return;
+        }
 
         await medecinService.EnregistrerMedecin(idUtilisateur, idMedecin, dateRdv.Value);
+        medecinSelectionne = listeMedecins.FirstOrDefault(m => m.NoUtilisateur == idMedecin);
+
+        if (medecinSelectionne == null)
+        {
+            // Récupérer le médecin depuis le service si non trouvé dans la liste locale (pour plus de robustesse)
+            (_, medecinSelectionne) = await medecinService.ChargerDossierMedecin(idUtilisateur);
+        }
 
         messageMed = "Médecin enregistré avec rendez-vous.";
+        afficherMedecins = false; // Fermer la liste après sélection
     }
 
+    private async Task DeselectionnerMedecin()
+    {
+        medecinSelectionne = null;
+        dateRdv = null;
+        await medecinService.RetirerMedecin(idUtilisateur);
+        // Optionnel : appeler le service pour retirer l'attribution dans la DB
+        // await medecinService.RetirerMedecin(idUtilisateur);
+    }
+
+    // --- Méthodes de modification (Appelées par DayDataDisplay) ---
     private async Task ModifierNuit()
     {
         afficherFormulaireModification = true;
-
-        // Charger les données existantes
-        noteModifiee = calendrierJour.Commentaire;
-
-        // Séparer date + heure pour les inputs
-        dateCoucherModifiee = DateOnly.FromDateTime(calendrierJour.HeureCoucher);
-        heureCoucherModifiee = TimeOnly.FromDateTime(calendrierJour.HeureCoucher);
-
-        dateLeverModifiee = DateOnly.FromDateTime(calendrierJour.HeureLever);
-        heureLeverModifiee = TimeOnly.FromDateTime(calendrierJour.HeureLever);
+        
+        // Les champs de modification sont déjà initialisés dans ChargerDonnees()
+        // C'est la façon la plus simple de réutiliser le formulaire interne.
     }
-
-    private void ModifierNuit(DateTime date, Models.Calendrier data)
-    {
-        dateSelectionnee = date;
-
-        noteModifiee = data.Commentaire;
-        // heureCoucherModifiee = data.HeureCoucher;
-        // heureLeverModifiee = data.HeureLever;
-
-        afficherFormulaireModification = true;
-    }
-
+    
     private async Task EnregistrerModifications()
     {
         bool ok = await calendrierService.ModifierCalendrier(
@@ -496,16 +371,9 @@
 
         if (ok)
         {
-            message = "Modifications enregistrées!";
+            await ChargerDonnees(selectedDate); // Recharger les données pour rafraîchir l'affichage
         }
-        else
-        {
-            message = "Aucune donnée à modifier pour cette date.";
-        }
-
+        
         afficherFormulaireModification = false;
     }
-
-
-
 }

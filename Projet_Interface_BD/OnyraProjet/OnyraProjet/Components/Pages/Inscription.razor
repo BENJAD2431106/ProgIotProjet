@@ -45,7 +45,7 @@
 
     <div class="mb-3">
         <label for="inputPassword7" class="col-form-label">Verify Password</label>
-        <InputText type="password" id="inputPassword7" class="form-control" aria-describedby="passwordHelpInline7" @bind-Value="mdpValid" placeholder="Repeat your password"></InputText>
+        <InputText type="password" id="inputPassword7" class="form-control" aria-describedby="passwordHelpInline" @bind-Value="mdpValid" placeholder="Repeat your password"></InputText>
     </div>
 
     <div class="form-group mb-3">
@@ -90,6 +90,40 @@
 
         }
 
+    }
+    // Dans le fichier .razor ou .razor.cs de votre formulaire d'inscription
+
+    // Propriété où le fichier binaire sera stocké
+    // public Utilisateur NouvelUtilisateur { get; set; } // Votre modèle
+
+    private async Task HandleFileSelection(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            // Définir une limite de taille si nécessaire (ex: 5MB = 5 * 1024 * 1024)
+            var maxFileSize = 5 * 1024 * 1024;
+
+            if (file.Size > maxFileSize)
+            {
+                // Gérer l'erreur de taille
+                return;
+            }
+
+            // Lire le contenu du fichier dans un MemoryStream
+            using (var stream = file.OpenReadStream(maxFileSize))
+            {
+                var buffer = new byte[file.Size];
+                await stream.ReadAsync(buffer);
+
+                // Stocker le tableau de bytes dans votre modèle
+                nouvelUtilisateur.Photo = buffer;
+            }
+        }
+        else
+        {
+            nouvelUtilisateur.Photo = null;
+        }
     }
     public async Task HandleError()
     {
