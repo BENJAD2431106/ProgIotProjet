@@ -3,6 +3,7 @@
 @using OnyraProjet.Services
 @using OnyraProjet.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Globalization
 
 @inject DonneeService donneeService
 @inject CustomAuthentificationStateProvider authProvider
@@ -21,13 +22,24 @@ else if (!donnee.Any())
 }
 else
 {
-    @if (donnee == null)
+    <!-- Liste déroulante des dates -->
+    <div class="mb-4">
+        <label class="form-label"><strong>Choisir une date :</strong></label>
+        <select class="form-select w-25"
+                @onchange="FiltrerParDate">
+            @foreach (var date in datesDisponibles)
+            {
+                var value = date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                <option value="@value" selected="@(value == dateSelectionneeStr)">
+                    @date.ToString("dd/MM/yyyy")
+                </option>
+            }
+        </select>
+    </div>
+
+    @if (donneeFiltrees == null || !donneeFiltrees.Any())
     {
-        <p>Chargement des données...</p>
-    }
-    else if (!donnee.Any())
-    {
-        <p>Aucune donnée disponible.</p>
+        <p>Aucune donnée pour cette date.</p>
     }
     else
     {
@@ -42,7 +54,7 @@ else
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var donneesCapteurs in donnee)
+                    @foreach (var donneesCapteurs in donneeFiltrees)
                     {
                         <tr>
                             <td>@donneesCapteurs.DateHeure.ToString("d")</td>
@@ -77,6 +89,8 @@ else
         <div class="d-flex justify-content-center mt-4">
             <div class="w-50">
                 @{
+                    // Max sur TOUTES les données (comme avant).
+                    // Si tu veux seulement la date sélectionnée, remplace "donnee" par "donneeFiltrees".
                     var lumiereMax = donnee.Max(d => d.ValLumiere);
                     var sonMax = donnee.Max(d => d.ValSon);
                 }
@@ -106,15 +120,72 @@ else
 }
 
 @code {
-    private List<OnyraProjet.Models.Donnee> donnee = new List<Donnee>();
+    // Toutes les données de l'utilisateur
+    private List<Donnee>? donnee;
+
+    // Données filtrées pour la date sélectionnée
+    private List<Donnee> donneeFiltrees = new();
+
+    // Liste des dates uniques disponibles
+    private List<DateOnly> datesDisponibles = new();
+
+    // Valeur sélectionnée dans le <select> (format yyyy-MM-dd)
+    private string? dateSelectionneeStr;
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await authProvider.GetAuthenticationStateAsync(); /* aller chercher si l'utilisateur est connecter */
-        var userIdClaim = authState.User.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier); /* DEF DE CETTE LIGNE : Trouve moi le claim qui contient l’ID de l'utilisateur. */
+        var userIdClaim = authState.User.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier); /* Trouve le claim qui contient l’ID de l'utilisateur. */
         int noUtilisateur = int.Parse(userIdClaim.Value);
 
         // Récupérer uniquement les données de cet utilisateur
         donnee = await donneeService.GetDonneesByUtilisateurAsync(noUtilisateur);
+
+        if (donnee.Any())
+        {
+            // Extraire les dates uniques (partie jour seulement)
+            datesDisponibles = donnee
+                .Select(d => DateOnly.FromDateTime(d.DateHeure))
+                .Distinct()
+                .OrderByDescending(d => d)   // La date la plus récente en premier
+                .ToList();
+
+            // Sélection par défaut : la plus récente
+            var dateDefaut = datesDisponibles.First();
+            dateSelectionneeStr = dateDefaut.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            AppliquerFiltre();
+        }
+    }
+
+    private void FiltrerParDate(ChangeEventArgs e)
+    {
+        dateSelectionneeStr = e.Value?.ToString();
+        AppliquerFiltre();
+    }
+
+    private void AppliquerFiltre()
+    {
+        if (donnee == null || !donnee.Any() || string.IsNullOrWhiteSpace(dateSelectionneeStr))
+        {
+            donneeFiltrees = new List<Donnee>();
+            return;
+        }
+
+        if (!DateOnly.TryParseExact(
+                dateSelectionneeStr,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var dateSelectionnee))
+        {
+            donneeFiltrees = new List<Donnee>();
+            return;
+        }
+
+        donneeFiltrees = donnee
+            .Where(d => DateOnly.FromDateTime(d.DateHeure) == dateSelectionnee)
+            .OrderByDescending(d => d.DateHeure)
+            .ToList();
     }
 }
