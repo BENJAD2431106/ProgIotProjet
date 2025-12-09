@@ -22,6 +22,24 @@ namespace OnyraProjet
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
+            //builder.Services.AddServerSideBlazor();
+            builder.Services.AddScoped<ConnexionService>();
+            builder.Services.AddScoped<MotDePasseService>();
+            builder.Services.AddScoped<ProfilService>();
+            builder.Services.AddScoped<DonneeService>();
+            builder.Services.AddScoped<WeatherService>();
+            builder.Services.AddScoped<ProtectedSessionStorage>();
+            builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthentificationStateProvider>();
+            builder.Services.AddScoped<CustomAuthentificationStateProvider>(); 
+            builder.Services.AddAuthenticationCore();
+
+            //mine
+            builder.Services.AddScoped<InscriptionService>();
+            builder.Services.AddScoped<CalendrierService>();
+            builder.Services.AddScoped<Medecin>();
+            builder.Services.AddScoped<VisualisateurCalendrierService>(); 
+
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

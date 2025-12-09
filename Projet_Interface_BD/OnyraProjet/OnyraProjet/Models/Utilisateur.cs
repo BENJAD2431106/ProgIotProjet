@@ -52,7 +52,15 @@ public partial class Utilisateur
     public bool? Config { get; set; }
 
     [Column("sel")]
+	
     public Guid Sel { get; set; }
+	
+    public Guid? Sel { get; set; }
+
+    [Column("motDePasse")]
+    [MaxLength(64)]
+    [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
+    public byte[] MotDePasse { get; set; } = null!;
 
     [InverseProperty("NoUtilisateurNavigation")]
     public virtual ICollection<Calendrier> Calendriers { get; set; } = new List<Calendrier>();
