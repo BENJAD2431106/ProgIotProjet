@@ -65,6 +65,5 @@ namespace OnyraProjet.Services
 
             return user;
         }
-
     }
 }
