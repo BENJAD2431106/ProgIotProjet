@@ -125,9 +125,15 @@ else if (profil != null)
     private int userId;
     private bool isLoading = true;
 
+    //Si l’utilisateur n’a pas de photo, on affiche les initiales dans un rond.
+    //Blazor plante si le code<div> @InitialesUtilisateur</div> est toujours là
     private string InitialesUtilisateur =>
         $"{(profil?.PrenomUtilisateur?.FirstOrDefault() ?? ' ')}{(profil?.NomUtilisateur?.FirstOrDefault() ?? ' ')}".ToUpper();
 
+    /// <summary>
+    /// Vérifie l’utilisateur et charge son profil.
+    /// </summary>
+    /// <returns></returns>
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthService.GetAuthenticationStateAsync();
@@ -158,7 +164,10 @@ else if (profil != null)
 
         isLoading = false;
     }
-
+    /// <summary>
+    /// Envoie le profil mis à jour au serveur et affiche un message de réussite ou une alerte en cas d’erreur.
+    /// </summary>
+    /// <returns></returns>
     private async Task HandleValidSubmit()
     {
         successMessage = null;
@@ -171,6 +180,23 @@ else if (profil != null)
         if (result)
         {
             successMessage = "Profil mis à jour avec succès !";
+
+            if (AuthService is CustomAuthentificationStateProvider customAuth)
+            {
+                // Récupérer la session existante
+                var sessionResult = await customAuth.GetUserSessionAsync();
+                var role = sessionResult?.Role ?? "Utilisateur";
+
+                var updatedSession = new UserSession2
+                {
+                    Id = userId,
+                    Name = profil.NomUtilisateur,
+                    FirstName = profil.PrenomUtilisateur,
+                    Role = role
+                };
+
+                await customAuth.UpDateAuthenticationState(updatedSession);
+            }
         }
         else
         {
@@ -178,28 +204,41 @@ else if (profil != null)
         }
     }
 
-    private async Task HandlePhotoUpload(InputFileChangeEventArgs e)
+
+    /// <summary>
+    /// Récupère la photo envoyée par l’utilisateur, vérifie sa taille, la lit en mémoire et l’enregistre dans profil.Photo sous forme de tableau de bytes.
+    /// </summary>
+    /// <param name="photo"></param>
+    /// <returns></returns>
+    private async Task HandlePhotoUpload(InputFileChangeEventArgs photo) //Contient le fichier choisi de l’utilisateur
     {
-        var file = e.File;
-        if (file == null || profil == null) return;
+        var file = photo.File; //Récupère le fichier
+        if (file == null || profil == null) return; // aucun fichier || aucun profil alors on arrête
 
-        const long maxFileSize = 5 * 1024 * 1024; // 5 Mo max
+        const long maxFileSize = 5 * 1024 * 1024; // Définit sa taille -> (5 Mo max)
 
-        using var ms = new MemoryStream();
-        await file.OpenReadStream(maxFileSize).CopyToAsync(ms);
-        profil.Photo = ms.ToArray();
+        using var ms = new MemoryStream(); // lire le fichier, le mettre dans la mémoire, l'envoyer a profil
+        await file.OpenReadStream(maxFileSize).CopyToAsync(ms); //Ouvre le fichier, Limite sa taille à 5
+        profil.Photo = ms.ToArray();  //l'envoie à profil
     }
 
     private string ConvertToBase64(byte[] imageData)
     {
-        return $"data:image/png;base64,{Convert.ToBase64String(imageData)}";
+        return $"data:image/png;base64,{Convert.ToBase64String(imageData)}"; // indique au navigateur que c’est une image encodée en Base64.
     }
 
+    /// <summary>
+    /// redirige simplement l’utilisateur vers la page “mot de passe oublié.
+    /// </summary>
+    /// 
     private void MotDePasseOublie()
     {
         NavigationManager.NavigateTo("/mot-de-passe-oublie");
     }
-
+    /// <summary>
+    /// déconnecte l’utilisateur en réinitialisant son authentification, puis le renvoie à la page d’accueil.
+    /// </summary>
+    /// <returns></returns>
     private async Task Deconnecter()
     {
         if (AuthService is CustomAuthentificationStateProvider custom)

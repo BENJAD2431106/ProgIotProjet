@@ -43,15 +43,15 @@ namespace OnyraProjet.Services
 
             if (paramNoUtilisateur.Value == DBNull.Value || paramNoUtilisateur.Value == null)
             {
-                id = -1;
+                id = -1; // On met id = -1 pour signaler une erreur / pas d’utilisateur
             }
             else
             {
-                id = (int)paramNoUtilisateur.Value;
+                id = (int)paramNoUtilisateur.Value; // Réussi on récupère l’ID
             }
 
-            if (id == -1)
-                return null;
+            if (id == -1) // signifie “pas de session” / “connexion échouée”.
+                return null; 
 
             var user = await context.Utilisateurs
                 .Where(u => u.NoUtilisateur == id)

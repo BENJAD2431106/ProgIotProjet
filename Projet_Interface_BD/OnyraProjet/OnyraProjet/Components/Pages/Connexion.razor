@@ -1,7 +1,7 @@
-﻿@using OnyraProjet.Authentication
+﻿@page "/connexion"
+@using OnyraProjet.Authentication
 @using OnyraProjet.Services
 @using OnyraProjet.Models
-@page "/connexion"
 @inject ConnexionService connexionservice
 @inject NavigationManager NavigationManager
 @inject CustomAuthentificationStateProvider authProvider
@@ -38,7 +38,6 @@
     </div>
 </div>
 
-
 @code {
 
     private ConnexionModel connexionModel = new ConnexionModel();
@@ -46,6 +45,20 @@
     private string courriel = "";
     private string motDePasse = "";
     private string message = "";
+
+    private bool ClearSession = false;
+
+    protected override async Task OnAfterRenderAsync(bool premierRendu)
+    {
+        if (premierRendu && !ClearSession)
+        {
+            ClearSession = true;
+
+            await authProvider.UpDateAuthenticationState(null);
+
+            StateHasChanged();
+        }
+    }
 
     private async Task SeConnecter()
     {

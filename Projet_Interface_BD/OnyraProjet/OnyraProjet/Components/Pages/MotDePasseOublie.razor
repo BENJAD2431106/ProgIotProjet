@@ -5,6 +5,7 @@
 @using OnyraProjet.Models
 @using OnyraProjet.Services
 @using System.Security.Claims
+@using OnyraProjet.Authentication
 
 @inject MotDePasseService MotDePasseService
 @inject AuthenticationStateProvider AuthService
@@ -13,16 +14,16 @@
 
 <PageTitle>Changer le mot de passe</PageTitle>
 
-@if (isLoading)
+@if (Chargement)
 {
     <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
         <div>Chargement…</div>
     </div>
 }
-else if (errorMessage != null)
+else if (messageErreur != null)
 {
     <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-        <div class="alert alert-danger">@errorMessage</div>
+        <div class="alert alert-danger">@messageErreur</div>
     </div>
 }
 else
@@ -54,77 +55,88 @@ else
                                @bind-Value="model.ConfirmationMotDePasse" />
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100 mb-3">
-                    Enregistrer
-                </button>
-
-                <button type="button" class="btn btn-secondary w-100"
-                        @onclick="RetourProfil">
-                    Retour au profil
+                <button type="submit" class="btn btn-primary w-100 mb-3" disabled="@envoie">
+                    @if (envoie)
+                    {
+                        <span>En cours…</span>
+                    }
+                    else
+                    {
+                        <span>Enregistrer</span>
+                    }
                 </button>
             </EditForm>
-
         </div>
     </div>
 }
 
 @code {
     private ChangerMotDePasseModel model = new();
-    private string? courriel;
     private int userId;
-    private bool isLoading = true;
-    private string? errorMessage;
+    private bool Chargement = true;
+    private bool envoie = false;
+    private string? messageErreur;
 
     protected override async Task OnInitializedAsync()
     {
         var auth = await AuthService.GetAuthenticationStateAsync();
         var user = auth.User;
 
-        // 1️⃣ Récupérer l'utilisateur via NameIdentifier (comme dans Profil)
         var idClaim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
         if (idClaim == null || !int.TryParse(idClaim, out userId))
         {
-            errorMessage = "Impossible d'identifier l'utilisateur.";
-            isLoading = false;
-            return;
+            messageErreur = "Impossible d'identifier l'utilisateur.";
         }
 
-        // 2️⃣ Récupérer le courriel depuis la BD
-        courriel = await MotDePasseService.GetCourrielAsync(userId);
-
-        if (courriel == null)
-        {
-            errorMessage = "Impossible de récupérer le courriel.";
-        }
-
-        isLoading = false;
+        Chargement = false;
     }
 
-    private async Task HandleSubmit()
+    private async Task HandleSubmit() //gère la soumission d’un formulaire
     {
-        if (courriel == null)
+        //Vérifier les deux nouveaux mots de passe
+        if (model.NouveauMotDePasse != model.ConfirmationMotDePasse)
         {
-            await JS.InvokeVoidAsync("alert", "Erreur : courriel non trouvé.");
+            await JS.InvokeVoidAsync("alert", "Les mots de passe ne correspondent pas.");
             return;
         }
 
-        var ok = await MotDePasseService.ChangerMotDePasseAsync(
-            courriel,
-            model.MotDePasseActuel,
-            model.NouveauMotDePasse);
+        envoie = true;
 
-        if (ok)
-        {
-            await JS.InvokeVoidAsync("alert", "Mot de passe modifié !");
-            NavigationManager.NavigateTo("/profil", true);
+        try
+        {   
+            //vérifier anciens mot de passe
+            var motDePasseCorrect = await MotDePasseService.VerifierMotDePasseAsync(userId, model.MotDePasseActuel);
+
+            if (!motDePasseCorrect)
+            {
+                await JS.InvokeVoidAsync("alert", "Mot de passe actuel incorrect.");
+                return;
+            }
+
+            //modifier mot de passe
+
+            var modificationCorrecte = await MotDePasseService.ModifierMotDePasseAsync(userId, model.NouveauMotDePasse);
+
+            if (modificationCorrecte)
+            {
+                await JS.InvokeVoidAsync("alert", "Mot de passe modifié !");
+
+                // Mettre à jour l'état d'authentification si nécessaire
+                if (AuthService is CustomAuthentificationStateProvider customAuth)
+                {
+                    await customAuth.UpDateAuthenticationState(null);
+                }
+
+                NavigationManager.NavigateTo("/connexion", true);
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Erreur lors de la modification du mot de passe.");
+            }
         }
-        else
+        finally // Si une exception survient, elle remontera et Blazor affichera une erreur par défaut
         {
-            await JS.InvokeVoidAsync("alert", "Mot de passe actuel incorrect.");
+            envoie = false;
         }
     }
-
-    private void RetourProfil() =>
-        NavigationManager.NavigateTo("/profil");
 }

@@ -49,8 +49,8 @@ else
                     <tr>
                         <th>Date</th>
                         <th>Heure</th>
-                        <th>Valeur Lumière</th>
-                        <th>Valeur Son</th>
+                        <th>Valeur Lumière (lux)</th>
+                        <th>Valeur Son (Hz)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,21 +62,21 @@ else
                             <td>
                                 @if (donneesCapteurs.ValLumiere > 200)
                                 {
-                                    <span class="badge bg-danger">@donneesCapteurs.ValLumiere</span>
+                                    <span class="badge bg-danger">@donneesCapteurs.ValLumiere lux</span>
                                 }
                                 else
                                 {
-                                    <span>@donneesCapteurs.ValLumiere</span>
+                                    <span>@donneesCapteurs.ValLumiere lux</span>
                                 }
                             </td>
                             <td>
                                 @if (donneesCapteurs.ValSon > 300)
                                 {
-                                    <span class="badge bg-danger">@donneesCapteurs.ValSon</span>
+                                    <span class="badge bg-danger">@donneesCapteurs.ValSon Hz</span>
                                 }
                                 else
                                 {
-                                    <span>@donneesCapteurs.ValSon</span>
+                                    <span>@donneesCapteurs.ValSon Hz</span>
                                 }
                             </td>
                         </tr>
@@ -88,31 +88,30 @@ else
         <!-- Messages centrés sous le tableau -->
         <div class="d-flex justify-content-center mt-4">
             <div class="w-50">
-                @{
-                    // Max sur TOUTES les données (comme avant).
-                    // Si tu veux seulement la date sélectionnée, remplace "donnee" par "donneeFiltrees".
+                @if (donnee.Any())
+                {
                     var lumiereMax = donnee.Max(d => d.ValLumiere);
                     var sonMax = donnee.Max(d => d.ValSon);
-                }
 
-                @if (lumiereMax > 200)
-                {
-                    <div class="card border-danger shadow-sm mb-3">
-                        <div class="card-body text-center">
-                            <h5 class="card-title text-danger mb-1">⚠ Lumière très élevée !</h5>
-                            <p class="card-text">La valeur maximale atteinte est : <strong>@lumiereMax</strong></p>
+                    @if (lumiereMax > 200)
+                    {
+                        <div class="card border-danger shadow-sm mb-3">
+                            <div class="card-body text-center">
+                                <h5 class="card-title text-danger mb-1">⚠ Lumière très élevée !</h5>
+                                <p class="card-text">La valeur maximale atteinte est : <strong>@lumiereMax lux</strong></p>
+                            </div>
                         </div>
-                    </div>
-                }
+                    }
 
-                @if (sonMax > 300)
-                {
-                    <div class="card border-danger shadow-sm">
-                        <div class="card-body text-center">
-                            <h5 class="card-title text-danger mb-1">⚠ Son très élevé !</h5>
-                            <p class="card-text">La valeur maximale atteinte est : <strong>@sonMax</strong></p>
+                    @if (sonMax > 300)
+                    {
+                        <div class="card border-danger shadow-sm">
+                            <div class="card-body text-center">
+                                <h5 class="card-title text-danger mb-1">⚠ Son très élevé !</h5>
+                                <p class="card-text">La valeur maximale atteinte est : <strong>@sonMax Hz</strong></p>
+                            </div>
                         </div>
-                    </div>
+                    }
                 }
             </div>
         </div>
@@ -120,72 +119,47 @@ else
 }
 
 @code {
-    // Toutes les données de l'utilisateur
     private List<Donnee>? donnee;
-
-    // Données filtrées pour la date sélectionnée
     private List<Donnee> donneeFiltrees = new();
-
-    // Liste des dates uniques disponibles
     private List<DateOnly> datesDisponibles = new();
-
-    // Valeur sélectionnée dans le <select> (format yyyy-MM-dd)
     private string? dateSelectionneeStr;
+    private int noUtilisateur;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await authProvider.GetAuthenticationStateAsync(); /* aller chercher si l'utilisateur est connecter */
-        var userIdClaim = authState.User.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier); /* Trouve le claim qui contient l’ID de l'utilisateur. */
-        int noUtilisateur = int.Parse(userIdClaim.Value);
+        var authState = await authProvider.GetAuthenticationStateAsync();
+        var userIdClaim = authState.User.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
+        noUtilisateur = int.Parse(userIdClaim.Value);
 
-        // Récupérer uniquement les données de cet utilisateur
+        // Récupère toutes les données de l'utilisateur
         donnee = await donneeService.GetDonneesByUtilisateurAsync(noUtilisateur);
 
-        if (donnee.Any())
-        {
-            // Extraire les dates uniques (partie jour seulement)
-            datesDisponibles = donnee
-                .Select(d => DateOnly.FromDateTime(d.DateHeure))
-                .Distinct()
-                .OrderByDescending(d => d)   // La date la plus récente en premier
-                .ToList();
+        // Récupère les dates disponibles
+        datesDisponibles = await donneeService.GetDatesDisponiblesAsync(noUtilisateur);
 
+        if (datesDisponibles.Any())
+        {
             // Sélection par défaut : la plus récente
             var dateDefaut = datesDisponibles.First();
             dateSelectionneeStr = dateDefaut.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-            AppliquerFiltre();
+            // Récupère les données filtrées par date
+            donneeFiltrees = await donneeService.GetDonneesParDateAsync(noUtilisateur, dateDefaut);
         }
     }
 
-    private void FiltrerParDate(ChangeEventArgs e)
+    private async Task FiltrerParDate(ChangeEventArgs e)
     {
         dateSelectionneeStr = e.Value?.ToString();
-        AppliquerFiltre();
-    }
 
-    private void AppliquerFiltre()
-    {
-        if (donnee == null || !donnee.Any() || string.IsNullOrWhiteSpace(dateSelectionneeStr))
-        {
-            donneeFiltrees = new List<Donnee>();
-            return;
-        }
-
-        if (!DateOnly.TryParseExact(
+        if (DateOnly.TryParseExact(
                 dateSelectionneeStr,
                 "yyyy-MM-dd",
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.None,
                 out var dateSelectionnee))
         {
-            donneeFiltrees = new List<Donnee>();
-            return;
+            donneeFiltrees = await donneeService.GetDonneesParDateAsync(noUtilisateur, dateSelectionnee);
         }
-
-        donneeFiltrees = donnee
-            .Where(d => DateOnly.FromDateTime(d.DateHeure) == dateSelectionnee)
-            .OrderByDescending(d => d.DateHeure)
-            .ToList();
     }
 }

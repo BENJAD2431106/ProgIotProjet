@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using OnyraProjet.Components.Pages;
 using OnyraProjet.Data;
 using System.Data;
 
@@ -14,77 +15,41 @@ namespace OnyraProjet.Services
             _factory = factory;
         }
 
-        // Récupérer le courriel selon l'ID utilisateur
-        public async Task<string?> GetCourrielAsync(int userId)
+        public async Task<bool> VerifierMotDePasseAsync(int userId, string motDePasse)
         {
-            await using var context = await _factory.CreateDbContextAsync();
-
-            return await context.Utilisateurs
-                                .Where(u => u.NoUtilisateur == userId)
-                                .Select(u => u.Courriel)
-                                .FirstOrDefaultAsync();
-        }
-
-        public async Task<bool> ChangerMotDePasseAsync(string courriel, string motDePasseActuel, string nouveauMotDePasse)
-        {
-            await using var context = await _factory.CreateDbContextAsync();
-            var connection = (SqlConnection)context.Database.GetDbConnection();
+            await using var context = await _factory.CreateDbContextAsync();  // await using = ferme automatiquement et proprement la connexion SQL d'une manière optimisée pour l’asynchrone. (Sinon : fuite de connexions ,base “saturée”, ralentissements, comportements imprévisibles)
+            await using var connection = (SqlConnection)context.Database.GetDbConnection();
             await connection.OpenAsync();
 
-            int noUtiliateur;
+            var requeteVerification = @"
+            SELECT COUNT(*) 
+            FROM Utilisateurs
+            WHERE NoUtilisateur = @UserId
+              AND MotDePasse = HASHBYTES('SHA2_512', @MotDePasse + CAST(sel AS NVARCHAR(36)))";
 
-            // ---- APPEL DE LA PROCÉDURE STOCKÉE ----
-            using (var cmd = new SqlCommand("UP_ConnexionUtilisateur", connection))
-            {
-                cmd.CommandType = CommandType.StoredProcedure;
+            await using var cmd = new SqlCommand(requeteVerification, connection);
+            cmd.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
+            cmd.Parameters.Add("@MotDePasse", SqlDbType.NVarChar, 255).Value = motDePasse;
 
-                cmd.Parameters.Add(new SqlParameter("@courriel", SqlDbType.NVarChar, 255)
-                {
-                    Value = courriel
-                });
+            return (int)await cmd.ExecuteScalarAsync() == 1;
+        }
 
-                cmd.Parameters.Add(new SqlParameter("@motDePasse", SqlDbType.NVarChar, 255)
-                {
-                    Value = motDePasseActuel
-                });
+        public async Task<bool> ModifierMotDePasseAsync(int userId, string nouveauMotDePasse)
+        {
+            await using var context = await _factory.CreateDbContextAsync();
+            await using var connection = (SqlConnection)context.Database.GetDbConnection();
+            await connection.OpenAsync();
 
-                // LE NOM EXACT QUI FIGURE DANS LA PROC SQL (AVEC LA FAUTE)
-                var outputParam = new SqlParameter("@noUtiliateur", SqlDbType.Int)
-                {
-                    Direction = ParameterDirection.Output
-                };
-                cmd.Parameters.Add(outputParam);
-
-                await cmd.ExecuteNonQueryAsync();
-
-                noUtiliateur = outputParam.Value is int i ? i : -1;
-            }
-
-            // Si login impossible → retour fail
-            if (noUtiliateur <= 0)
-                return false;
-
-            // ---- MISE À JOUR DU MOT DE PASSE ----
-            const string updateSql = @"
+            var requeteMiseAJour = @"
             UPDATE Utilisateurs
-            SET MotDePasse = HASHBYTES('SHA2_512', @NewPwd + CAST(sel AS NVARCHAR(36)))
-            WHERE NoUtilisateur = @noUtiliateur";
+            SET MotDePasse = HASHBYTES('SHA2_512', @NouveauMotDePasse + CAST(sel AS NVARCHAR(36)))
+            WHERE NoUtilisateur = @UserId";
 
-            using (var cmdUpdate = new SqlCommand(updateSql, connection))
-            {
-                cmdUpdate.Parameters.Add(new SqlParameter("@NewPwd", SqlDbType.NVarChar, 255)
-                {
-                    Value = nouveauMotDePasse
-                });
+            await using var cmd = new SqlCommand(requeteMiseAJour, connection);
+            cmd.Parameters.Add("@NouveauMotDePasse", SqlDbType.NVarChar, 255).Value = nouveauMotDePasse;
+            cmd.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
 
-                cmdUpdate.Parameters.Add(new SqlParameter("@noUtiliateur", SqlDbType.Int)
-                {
-                    Value = noUtiliateur
-                });
-
-                var rows = await cmdUpdate.ExecuteNonQueryAsync();
-                return rows == 1;
-            }
+            return await cmd.ExecuteNonQueryAsync() == 1;
         }
     }
 }

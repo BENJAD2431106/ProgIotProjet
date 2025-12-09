@@ -13,6 +13,11 @@ namespace OnyraProjet.Services
             _contextFactory = contextFactory;
         }
 
+        /// <summary>
+        /// Cherche un utilisateur par son numéro dans la base de données et, si elle le trouve, elle renvoie son profi, sinon, elle renvoie null.
+        /// </summary>
+        /// <param name="noUtilisateur"></param>
+        /// <returns></returns>
         public async Task<ProfilModel?> GetProfilAsync(int noUtilisateur)
         {
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -34,6 +39,12 @@ namespace OnyraProjet.Services
             };
         }
 
+        /// <summary>
+        /// Met à jour le profil d’un utilisateur dans la base de données et renvoie true si tout s’est bien passé.
+        /// </summary>
+        /// <param name="noUtilisateur"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
         public async Task<bool> UpdateProfilAsync(int noUtilisateur, ProfilModel model)
         {
             await using var context = await _contextFactory.CreateDbContextAsync();
