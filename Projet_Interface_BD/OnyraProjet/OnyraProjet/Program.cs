@@ -17,7 +17,7 @@ namespace OnyraProjet
         {
             var builder = WebApplication.CreateBuilder(args);
             var conStrBuilder = new SqlConnectionStringBuilder(
-                builder.Configuration.GetConnectionString("ConnexionDBDev"));
+                builder.Configuration.GetConnectionString("ConnexionDB"));
             conStrBuilder.Password = builder.Configuration["Password"];
 
             builder.Services.AddPooledDbContextFactory<Prog3a25ProductionAllysonJadContext>(
