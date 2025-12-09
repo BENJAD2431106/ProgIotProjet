@@ -26,19 +26,16 @@ namespace OnyraProjet.Services
             var param4 = new SqlParameter("@mdpParam", nouvelUtilisateur.mdpInscription);
             var param5 = new SqlParameter("@photoParam", System.Data.SqlDbType.VarBinary);
 
-            // 1. Gérer le cas où la photo est NULL (pas d'image)
             if (nouvelUtilisateur.Photo == null)
             {
-                // C'est crucial : L'utilisation de DBNull.Value garantit que SQL Server interprète cela comme NULL.
                 param5.Value = DBNull.Value;
             }
             else
             {
-                // 2. Si la photo existe, passez le tableau de bytes
                 param5.Value = nouvelUtilisateur.Photo;
             }
 
-            param5.IsNullable = true; // Déjà présent, mais à confirmer (pas strictement nécessaire si Value = DBNull.Value)
+            param5.IsNullable = true; 
             param5.Size = -1;
             var param6 = new SqlParameter("@ramQParam", nouvelUtilisateur.RamQ);
             var param7 = new SqlParameter("@ageParam", nouvelUtilisateur.Age);

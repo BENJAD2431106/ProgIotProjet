@@ -54,7 +54,7 @@
 @code {
     [Parameter] public DateTime SelectedDate { get; set; }
     [Parameter] public OnyraProjet.Models.Calendrier NouveauCalendrier { get; set; } = new();
-    [Parameter] public string Message { get; set; } = "";
+    [Parameter] public string Message { get; set; }
 
     // Les liaisons pour les propriétés complexes (DateOnly / DateTime)
     [Parameter] public DateOnly DateCoucher { get; set; }
