@@ -41,30 +41,53 @@
 
                 @if (afficherFormulaireModification && calendrierJour is not null)
                 {
-                    <div class="card mt-3 p-3 bg-light">
-                        <h5>Modifier la nuit du @selectedDate.ToShortDateString()</h5>
+                    <div class="card mt-3 shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Modifier la nuit du <strong>@selectedDate.ToShortDateString()</strong></h5>
+                        </div>
 
-                        <label>Note</label>
-                        <input class="form-control" @bind="noteModifiee" />
+                        <div class="card-body">
 
-                        <label>Date De Coucher</label>
-                        <input type="date" class="form-control" @bind="dateCoucherModifiee" />
+                            <div class="mb-3">
+                                <label for="noteModifiee" class="form-label fw-bold">Note/Commentaire</label>
+                                <input id="noteModifiee" class="form-control" @bind="noteModifiee" placeholder="Ajouter un commentaire ou ressenti" />
+                            </div>
 
-                        <label>Heure de coucher</label>
-                        <input type="time" class="form-control" @bind="heureCoucherModifiee" />
+                            <div class="row mb-3 gx-2">
+                                <label class="form-label fw-bold">Heure de coucher</label>
+                                <div class="col-6">
+                                    <label for="dateCoucherModifiee" class="form-label text-muted small mb-0">Date</label>
+                                    <input type="date" id="dateCoucherModifiee" class="form-control" @bind="dateCoucherModifiee"/>
+                                </div>
+                                <div class="col-6">
+                                    <label for="heureCoucherModifiee" class="form-label text-muted small mb-0">Heure</label>
+                                    <input type="time" id="heureCoucherModifiee" class="form-control" @bind="heureCoucherModifiee" />
+                                </div>
+                            </div>
 
-                        <label>Date De Lever</label>
-                        <input type="date" class="form-control" @bind="dateLeverModifiee" />
+                            <div class="row mb-3 gx-2">
+                                <label class="form-label fw-bold">Heure de lever</label>
+                                <div class="col-6">
+                                    <label for="dateLeverModifiee" class="form-label text-muted small mb-0">Date</label>
+                                    <input type="date" id="dateLeverModifiee" class="form-control" @bind="dateLeverModifiee" readonly />
+                                </div>
+                                <div class="col-6">
+                                    <label for="heureLeverModifiee" class="form-label text-muted small mb-0">Heure</label>
+                                    <input type="time" id="heureLeverModifiee" class="form-control" @bind="heureLeverModifiee" />
+                                </div>
+                            </div>
 
-                        <label>Heure de lever</label>
-                        <input type="time" class="form-control" @bind="heureLeverModifiee" />
-
-                        <button class="btn btn-success mt-2" @onclick="EnregistrerModifications">
-                            Enregistrer modifications
-                        </button>
-                        <button class="btn btn-secondary mt-2" @onclick="() => afficherFormulaireModification = false">
-                            Annuler
-                        </button>
+                            <hr />
+                            <p>@msgModif</p>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-success mt-2 fw-bold" @onclick="EnregistrerModifications">
+                                    ✔️ Enregistrer modifications
+                                </button>
+                                <button class="btn btn-outline-secondary mt-1" @onclick="() => afficherFormulaireModification = false">
+                                    Annuler
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 }
             }
@@ -106,6 +129,7 @@
     private DateTime currentMonth = DateTime.Today;
     private DateTime selectedDate = DateTime.MinValue;
     private string message = "";
+    private string msgModif = "";
     private string messageMed = "";
     private List<DateOnly> joursRemplis = new();
     // propriétés existantes
@@ -133,8 +157,6 @@
     private DateOnly dateLeverModifiee = DateOnly.FromDateTime(DateTime.Now);
     DateOnly dateCoucherModifiee =DateOnly.FromDateTime(DateTime.Now);
     DateTime dateSelectionnee; // la date que l’utilisateur modifie
-
-    string msgModif = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -344,11 +366,8 @@
         medecinSelectionne = null;
         dateRdv = null;
         await medecinService.RetirerMedecin(idUtilisateur);
-        // Optionnel : appeler le service pour retirer l'attribution dans la DB
-        // await medecinService.RetirerMedecin(idUtilisateur);
     }
 
-    // --- Méthodes de modification (Appelées par DayDataDisplay) ---
     private async Task ModifierNuit()
     {
         afficherFormulaireModification = true;
@@ -359,6 +378,12 @@
     
     private async Task EnregistrerModifications()
     {
+        msgModif = string.Empty;
+        if (dateCoucherModifiee <= dateLeverModifiee.AddDays(-2) || dateCoucherModifiee >= dateLeverModifiee)
+        {
+            msgModif = "⚠️ Faites attention à la date de coucher. Donnée erronée (Trop d'écart avec la date de lever).";
+            return; 
+        }
         bool ok = await calendrierService.ModifierCalendrier(
             idUtilisateur,
             DateOnly.FromDateTime(selectedDate),

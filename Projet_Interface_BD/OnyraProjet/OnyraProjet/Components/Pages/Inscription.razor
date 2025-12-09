@@ -9,67 +9,65 @@
 
 <PageTitle>Inscription</PageTitle>
 
-<h3 class="text-center mb-4"><strong>Inscription</strong></h3>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <h3 class="text-center mb-4 text-primary"><strong>📝 Inscription</strong></h3>
 
-<EditForm Model="nouvelUtilisateur" formname="FormInscr" OnValidSubmit="HandleError" class="container p-4 border rounded shadow-sm" style="max-width: 500px;">
+            <EditForm Model="nouvelUtilisateur" formname="FormInscr" OnValidSubmit="HandleError" class="p-4 border rounded shadow-lg bg-white">
 
-    <div class="form-group mb-3">
-        <label for="email">Email address</label>
-        <InputText type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email" @bind-Value="nouvelUtilisateur.Courriel"></InputText>
-        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
-    </div>
+                <div class="form-group mb-3">
+                    <label for="email" class="form-label fw-bold">Adresse Email</label>
+                    <InputText type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Entrez votre email" @bind-Value="nouvelUtilisateur.Courriel"></InputText>
+                    <small id="emailHelp" class="form-text text-muted">Nous ne partagerons jamais votre email.</small>
+                </div>
 
-    <div class="form-group mb-3">
-        <label for="nom">First Name</label>
-        <InputText type="text" class="form-control" id="InputNom" placeholder="Your First Name" @bind-Value="nouvelUtilisateur.PrenomUtilisateur"></InputText>
-    </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 form-group">
+                        <label for="InputPrenom" class="form-label fw-bold">Prénom</label>
+                        <InputText type="text" class="form-control" id="InputPrenom" placeholder="Votre Prénom" @bind-Value="nouvelUtilisateur.PrenomUtilisateur"></InputText>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label for="InputNom" class="form-label fw-bold">Nom de Famille</label>
+                        <InputText type="text" class="form-control" id="InputNom" placeholder="Votre Nom de Famille" @bind-Value="nouvelUtilisateur.NomUtilisateur"></InputText>
+                    </div>
+                </div>
 
-    <div class="form-group mb-3">
-        <label for="prenom">Last Name</label>
-        <InputText type="text" class="form-control" id="InputPrenom" placeholder="Your Last Name" @bind-Value="nouvelUtilisateur.NomUtilisateur"></InputText>
-    </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 form-group">
+                        <label for="inputPassword6" class="form-label fw-bold">Mot de passe</label>
+                        <InputText type="password" id="inputPassword6" class="form-control" aria-describedby="passwordHelpInline" @bind-Value="nouvelUtilisateur.mdpInscription" placeholder="Entrez un mot de passe"></InputText>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label for="inputPassword7" class="form-label fw-bold">Vérifier le mot de passe</label>
+                        <InputText type="password" id="inputPassword7" class="form-control" aria-describedby="passwordHelpInline" @bind-Value="mdpValid" placeholder="Répétez votre mot de passe"></InputText>
+                    </div>
+                    <div class="col-12 mt-1">
+                        <small id="passwordHelpInline" class="form-text text-muted">
+                            Choisissez un mot de passe sécurisé (minimum 8 caractères, etc.).
+                        </small>
+                    </div>
+                </div>
 
-    <div class="row g-3 align-items-center mb-3">
-        <div class="col-auto">
-            <label for="inputPassword6" class="col-form-label">Password</label>
+                <div class="row mb-3">
+                    <div class="col-md-7 form-group">
+                        <label for="InputRamq" class="form-label fw-bold">Numéro d'Assurance Maladie (RAMQ)</label>
+                        <InputText type="text" class="form-control" id="InputRamq" placeholder="Entrez votre 'RamQ'" @bind-value="nouvelUtilisateur.RamQ"></InputText>
+                    </div>
+                    <div class="col-md-5 form-group">
+                        <label for="InputAge" class="form-label fw-bold">Âge</label>
+                        <InputNumber type="text" class="form-control" id="InputAge" placeholder="Entrez votre Âge" @bind-value="nouvelUtilisateur.Age"></InputNumber>
+                    </div>
+                </div>
+
+                <p class="text-danger text-center fw-bold">@message</p>
+
+                <button type="submit" class="btn btn-success btn-lg w-100 mt-3 shadow">S'inscrire</button>
+
+            </EditForm>
         </div>
-        <div class="col">
-            <InputText type="password" id="inputPassword6" class="form-control" aria-describedby="passwordHelpInline" @bind-Value="nouvelUtilisateur.mdpInscription" placeholder="Enter Password"></InputText>
-        </div>
-        <div class="col-12">
-            <small id="passwordHelpInline" class="form-text text-muted">
-                Must be 8-20 characters long.
-            </small>
-        </div>
     </div>
-
-    <div class="mb-3">
-        <label for="inputPassword7" class="col-form-label">Verify Password</label>
-        <InputText type="password" id="inputPassword7" class="form-control" aria-describedby="passwordHelpInline" @bind-Value="mdpValid" placeholder="Repeat your password"></InputText>
-    </div>
-
-    <div class="form-group mb-3">
-        <label for="photo">Load Your Photo</label>
-        <InputFile type="file" class="form-control" id="photo" @bind-value="nouvelUtilisateur.Photo"></InputFile>
-    </div>
-
-    <div class="form-group mb-3">
-        <label for="InputRamq">RamQ</label>
-        <InputText type="text" class="form-control" id="InputRamq" placeholder="Enter your 'RamQ'" @bind-value="nouvelUtilisateur.RamQ"></InputText>
-    </div>
-
-    <div class="form-group mb-3">
-        <label for="InputAge">Age</label>
-        <InputNumber type="text" class="form-control" id="InputAge" placeholder="Enter your Age" @bind-value="nouvelUtilisateur.Age"></InputNumber>
-    </div>
-
-    <p class="text-danger text-center">@message</p>
-
-    <button class="btn btn-primary w-100 mt-3">Submit</button>
-
-</EditForm>
-
-
+</div>
 @code
 {
     string mdpValid = "";
