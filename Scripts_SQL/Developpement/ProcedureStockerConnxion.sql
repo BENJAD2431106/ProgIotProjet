@@ -24,4 +24,3 @@ exec UP_ConnexionUtilisateur
 	@noUtilisateur output
 GO
 SELECT @noUtilisateur
-

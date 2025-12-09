@@ -7,6 +7,7 @@ using Microsoft.VisualBasic;
 using OnyraProjet.Authentication;
 using OnyraProjet.Data;
 using OnyraProjet.Models;
+using System.Data;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -38,12 +39,20 @@ namespace OnyraProjet.Services
                 "EXEC UP_ConnexionUtilisateur @courriel, @motDePasse, @noUtilisateur OUTPUT",
                 paramCourriel, paramMotDePasse, paramNoUtilisateur);
 
-            int id = (int)paramNoUtilisateur.Value;
+            int id;
 
-            if (id == -1)
-                return null;
+            if (paramNoUtilisateur.Value == DBNull.Value || paramNoUtilisateur.Value == null)
+            {
+                id = -1; // On met id = -1 pour signaler une erreur / pas d’utilisateur
+            }
+            else
+            {
+                id = (int)paramNoUtilisateur.Value; // Réussi on récupère l’ID
+            }
 
-            // Va récupérer l'utilisateur dans la BD
+            if (id == -1) // signifie “pas de session” / “connexion échouée”.
+                return null; 
+
             var user = await context.Utilisateurs
                 .Where(u => u.NoUtilisateur == id)
                 .Select(u => new UserSession2
@@ -56,7 +65,5 @@ namespace OnyraProjet.Services
 
             return user;
         }
-
-
     }
 }

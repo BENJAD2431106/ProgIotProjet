@@ -118,5 +118,19 @@ namespace OnyraProjet.Authentication
 
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));
         }
+
+        public async Task<UserSession2?> GetUserSessionAsync()
+        {
+            try
+            {
+                var result = await _sessionStorage.GetAsync<UserSession2>("UserSession");
+                return result.Success ? result.Value : null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
     }
 }

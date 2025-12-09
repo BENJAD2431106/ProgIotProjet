@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace OnyraProjet.Models;
 
-public partial class Donnee
+public partial class Donnee /*son vrai nom : DonneeCapteur */
 {
     [Key]
     [Column("noDonnees")]
